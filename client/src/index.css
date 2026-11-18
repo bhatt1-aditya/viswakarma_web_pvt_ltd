@@ -1,0 +1,409 @@
+@import url("https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Nunito Sans", sans-serif;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #1dc9a0;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-15px);
+  }
+  0% {
+    transform: translateY(0);
+  }
+}
+
+.bounce {
+  animation: bounce 1.5s ease-in-out infinite alternate-reverse;
+}
+
+.jakarta-font {
+  font-family: "Plus Jakarta Sans";
+}
+
+.familjen-font {
+  font-family: "Familjen Grotesk";
+}
+
+.polygon-clip {
+  clip-path: polygon(
+    45% 1.33975%,
+    46.5798% 0.60307%,
+    48.26352% 0.15192%,
+    50% 0%,
+    51.73648% 0.15192%,
+    53.4202% 0.60307%,
+    55% 1.33975%,
+    89.64102% 21.33975%,
+    91.06889% 22.33956%,
+    92.30146% 23.57212%,
+    93.30127% 25%,
+    94.03794% 26.5798%,
+    94.48909% 28.26352%,
+    94.64102% 30%,
+    94.64102% 70%,
+    94.48909% 71.73648%,
+    94.03794% 73.4202%,
+    93.30127% 75%,
+    92.30146% 76.42788%,
+    91.06889% 77.66044%,
+    89.64102% 78.66025%,
+    55% 98.66025%,
+    53.4202% 99.39693%,
+    51.73648% 99.84808%,
+    50% 100%,
+    48.26352% 99.84808%,
+    46.5798% 99.39693%,
+    45% 98.66025%,
+    10.35898% 78.66025%,
+    8.93111% 77.66044%,
+    7.69854% 76.42788%,
+    6.69873% 75%,
+    5.96206% 73.4202%,
+    5.51091% 71.73648%,
+    5.35898% 70%,
+    5.35898% 30%,
+    5.51091% 28.26352%,
+    5.96206% 26.5798%,
+    6.69873% 25%,
+    7.69854% 23.57212%,
+    8.93111% 22.33956%,
+    10.35898% 21.33975%
+  );
+}
+
+/* --- Bounce Animations for LabSection--- */
+@keyframes bounce-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-1rem);
+  }
+}
+@keyframes bounce-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(1rem);
+  }
+}
+@keyframes bounce-up {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1rem);
+  }
+}
+@keyframes bounce-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(1rem);
+  }
+}
+.animate-bounce-left {
+  animation: bounce-left 2s infinite;
+}
+.animate-bounce-right {
+  animation: bounce-right 2s infinite;
+}
+.animate-bounce-up {
+  animation: bounce-up 2s infinite;
+}
+.animate-bounce-down {
+  animation: bounce-down 2s infinite;
+}
+
+/* Card Hover Animations */
+.lab-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lab-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(11, 182, 217, 0.1),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.lab-card:hover::before {
+  left: 100%;
+}
+
+.lab-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 20px 40px rgba(11, 182, 217, 0.3);
+  /* border: 2px solid rgba(11, 182, 217, 0.3); */
+}
+
+.card-icon {
+  transition: all 0.4s ease;
+}
+
+.lab-card:hover .card-icon {
+  transform: rotate(10deg);
+}
+
+.card-title {
+  transition: all 0.3s ease;
+}
+
+.lab-card:hover .card-title {
+  color: #0bb6d9;
+  transform: translateX(4px);
+}
+
+.card-desc {
+  transition: all 0.3s ease;
+}
+
+.lab-card:hover .card-desc {
+  color: #333;
+}
+
+.card-button {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.lab-card:hover .card-button {
+  color: #0bb6d9;
+  transform: translateX(8px);
+}
+
+.card-button svg {
+  transition: transform 0.3s ease;
+}
+
+.lab-card:hover .card-button svg {
+  transform: translateX(4px);
+}
+
+/* Seamless Marquee */
+@keyframes scroll-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  position: relative;
+}
+.marquee-content {
+  display: flex;
+  animation: scroll-marquee 20s linear infinite;
+}
+
+/* career */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Glassmorphism and brand glow utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-panel-dark {
+  background: rgba(8, 43, 89, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #0756A5 0%, #FF6900 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-blue-orange {
+  background: linear-gradient(135deg, #0756A5 0%, #082B59 50%, #FF6900 100%);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #0756A5 0%, #082B59 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #FF6900 0%, #FF8A00 100%);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+

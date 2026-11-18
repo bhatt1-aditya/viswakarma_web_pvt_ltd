@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Website Design & Development",
+    "slug": "website-design-development",
+    "description": "Enterprise-grade web applications, corporate portals, and high-performance websites engineered for scalability and conversion.",
+    "icon": "Globe",
+    "order": 1,
+    "serviceCount": 15
+  },
+  {
+    "name": "Content Management Systems (CMS)",
+    "slug": "content-management-systems",
+    "description": "Custom headless and decoupled CMS architectures, bespoke WordPress, Shopify, and enterprise content publishing platforms.",
+    "icon": "FileCode",
+    "order": 2,
+    "serviceCount": 10
+  },
+  {
+    "name": "E-Commerce Solutions",
+    "slug": "ecommerce-solutions",
+    "description": "Omnichannel digital storefronts, multi-vendor marketplaces, payment orchestration, and automated inventory sync.",
+    "icon": "ShoppingCart",
+    "order": 3,
+    "serviceCount": 13
+  },
+  {
+    "name": "Mobile Application Development",
+    "slug": "mobile-app-development",
+    "description": "High-performance native and cross-platform iOS & Android mobile apps engineered for fluid user journeys and high retention.",
+    "icon": "Smartphone",
+    "order": 4,
+    "serviceCount": 12
+  },
+  {
+    "name": "Custom Software & Enterprise Solutions",
+    "slug": "custom-software-enterprise",
+    "description": "Bespoke ERPs, intelligent CRMs, supply chain automation, and mission-critical cloud software systems.",
+    "icon": "Layers",
+    "order": 5,
+    "serviceCount": 13
+  },
+  {
+    "name": "AI, Machine Learning & Automation",
+    "slug": "ai-machine-learning-automation",
+    "description": "Enterprise AI agents, intelligent document processing, predictive intelligence, and end-to-end robotic workflow automations.",
+    "icon": "Cpu",
+    "order": 6,
+    "serviceCount": 10
+  },
+  {
+    "name": "Cloud, DevOps & IT Infrastructure",
+    "slug": "cloud-devops-infrastructure",
+    "description": "Cloud architecture (AWS, GCP, Azure), automated CI/CD pipelines, container orchestration, and 24/7 infrastructure hardening.",
+    "icon": "Cloud",
+    "order": 7,
+    "serviceCount": 11
+  },
+  {
+    "name": "Digital Marketing & SEO",
+    "slug": "digital-marketing-seo",
+    "description": "Data-driven organic search domination, high-converting PPC funnels, programmatic advertising, and GA4 analytics.",
+    "icon": "TrendingUp",
+    "order": 8,
+    "serviceCount": 13
+  },
+  {
+    "name": "UI/UX Design & Branding",
+    "slug": "ui-ux-design-branding",
+    "description": "Human-centric digital product design, cohesive design systems, modern visual identities, and interactive prototypes.",
+    "icon": "Palette",
+    "order": 9,
+    "serviceCount": 11
+  }
+]

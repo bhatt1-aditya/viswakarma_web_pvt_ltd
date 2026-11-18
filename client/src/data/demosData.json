@@ -1,0 +1,399 @@
+[
+  {
+    "demoNumber": 1,
+    "demoId": "corporate-website",
+    "title": "Corporate Website Experience",
+    "category": "Website Design & Development",
+    "description": "Interactive corporate portal with modern layouts, dynamic service showcase, and inquiry workflows.",
+    "route": "/live-demos/corporate-website",
+    "icon": "Globe",
+    "features": [
+      "Hero with tech visuals",
+      "Service exploration tabs",
+      "Interactive quote modal",
+      "Team & credibility showcase"
+    ],
+    "relatedServices": [
+      "Custom Business Website Design",
+      "Corporate Website Development",
+      "Static & Dynamic Website Creation"
+    ]
+  },
+  {
+    "demoNumber": 2,
+    "demoId": "ecommerce-store",
+    "title": "E-Commerce Store & Checkout",
+    "category": "E-Commerce Solutions",
+    "description": "Full retail shopping experience with live product filtering, add-to-cart, cart totals, and simulated checkout.",
+    "route": "/live-demos/ecommerce-store",
+    "icon": "ShoppingCart",
+    "features": [
+      "Category filtering & search",
+      "Dynamic cart calculations",
+      "Coupon code simulation",
+      "Mock checkout flow with Razorpay simulation"
+    ],
+    "relatedServices": [
+      "Custom E-Commerce Storefront Development",
+      "Shopify Theme & App Development",
+      "Shopping Cart & Checkout Flow Optimization"
+    ]
+  },
+  {
+    "demoNumber": 3,
+    "demoId": "multi-vendor-marketplace",
+    "title": "Multi-Vendor Marketplace",
+    "category": "E-Commerce Solutions",
+    "description": "Dual-sided marketplace allowing simultaneous testing of customer marketplace interface and vendor seller portal.",
+    "route": "/live-demos/multi-vendor-marketplace",
+    "icon": "Store",
+    "features": [
+      "Customer shopping vs Vendor portal switch",
+      "Vendor sales revenue tracker",
+      "Order dispatch simulator",
+      "Inventory catalog management"
+    ],
+    "relatedServices": [
+      "Multi-Vendor Marketplace Development",
+      "B2B Wholesale E-Commerce Portals",
+      "Marketplace Listing & Feed Management"
+    ]
+  },
+  {
+    "demoNumber": 4,
+    "demoId": "crm-software",
+    "title": "CRM & Lead Pipeline System",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Interactive customer relationship pipeline with drag-and-drop lead stages, contact editing, and follow-up logging.",
+    "route": "/live-demos/crm-software",
+    "icon": "Users",
+    "features": [
+      "Visual Kanban pipeline stages",
+      "Add/Edit customer profiles",
+      "Follow-up date scheduler",
+      "Conversion value tracking"
+    ],
+    "relatedServices": [
+      "Customer Relationship Management (CRM) Systems",
+      "AI Sales & Lead Qualification Assistants",
+      "LinkedIn B2B Lead Generation Campaigns"
+    ]
+  },
+  {
+    "demoNumber": 5,
+    "demoId": "erp-software",
+    "title": "Enterprise ERP System",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "End-to-end resource planning demo featuring inventory tracking, procurement orders, sales ledgers, and executive insights.",
+    "route": "/live-demos/erp-software",
+    "icon": "Layers",
+    "features": [
+      "Live operational KPI dashboard",
+      "Purchase order generation",
+      "Stock balance monitoring",
+      "Exportable business audit reports"
+    ],
+    "relatedServices": [
+      "Custom Enterprise Resource Planning (ERP) Software",
+      "Wholesale, Import-Export & Trading ERP",
+      "Legacy Spreadsheet-to-Software Modernization"
+    ]
+  },
+  {
+    "demoNumber": 6,
+    "demoId": "hrms-software",
+    "title": "HRMS & Payroll Portal",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Human resources portal with staff directory, daily attendance punch simulator, leave request approvals, and payroll computation.",
+    "route": "/live-demos/hrms-software",
+    "icon": "UserCheck",
+    "features": [
+      "Employee database with department tags",
+      "Real-time attendance punch simulation",
+      "Leave management status toggle",
+      "Salary slip calculation overview"
+    ],
+    "relatedServices": [
+      "Human Resource Management System (HRMS) & Payroll",
+      "Enterprise Mobility & Field Force Apps"
+    ]
+  },
+  {
+    "demoNumber": 7,
+    "demoId": "school-management",
+    "title": "School & Campus Management",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Comprehensive education management system showing student enrollment, class schedules, fee collection, and grade reports.",
+    "route": "/live-demos/school-management",
+    "icon": "GraduationCap",
+    "features": [
+      "Student admissions roster",
+      "Class & teacher assignment matrix",
+      "Fee payment ledger & receipts",
+      "Exam grade distribution"
+    ],
+    "relatedServices": [
+      "School, College & Institute Management Systems",
+      "EdTech & E-Learning Mobile Apps"
+    ]
+  },
+  {
+    "demoNumber": 8,
+    "demoId": "hospital-management",
+    "title": "Hospital & Clinic Portal",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Healthcare administration platform featuring patient records, doctor specialty schedules, appointment bookings, and lab billing.",
+    "route": "/live-demos/hospital-management",
+    "icon": "HeartPulse",
+    "features": [
+      "Patient OPD registration",
+      "Doctor appointment scheduler",
+      "Departmental triage status",
+      "Medical billing summary"
+    ],
+    "relatedServices": [
+      "Hospital & Clinic Management Software",
+      "Healthcare & Telemedicine Mobile Apps"
+    ]
+  },
+  {
+    "demoNumber": 9,
+    "demoId": "restaurant-management",
+    "title": "Restaurant POS & Kitchen System",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Interactive restaurant suite with visual table layout, digital touch menu, live Kitchen Order Ticket (KOT) board, and bill generator.",
+    "route": "/live-demos/restaurant-management",
+    "icon": "Utensils",
+    "features": [
+      "Interactive dining table map",
+      "Quick menu item ordering",
+      "Live kitchen ticket status tracker",
+      "GST-compliant restaurant receipt"
+    ],
+    "relatedServices": [
+      "On-Demand Delivery & Booking Apps",
+      "Accounting, Billing & Invoicing Software"
+    ]
+  },
+  {
+    "demoNumber": 10,
+    "demoId": "real-estate-portal",
+    "title": "Real Estate & Property Portal",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Interactive property marketplace with interactive filters, floor plan previews, instant viewing booking, and agent inquiries.",
+    "route": "/live-demos/real-estate-portal",
+    "icon": "Building",
+    "features": [
+      "Price, BHK & location filters",
+      "Property details & amenities modal",
+      "Schedule visit appointment form",
+      "Agent listings management"
+    ],
+    "relatedServices": [
+      "Real Estate & Property Management Portals",
+      "Landing Page Design & Optimization"
+    ]
+  },
+  {
+    "demoNumber": 11,
+    "demoId": "travel-booking",
+    "title": "Travel & Tour Booking Engine",
+    "category": "Website Design & Development",
+    "description": "Holiday booking engine showcasing destination cards, itinerary breakdown, passenger count pricing, and booking summary.",
+    "route": "/live-demos/travel-booking",
+    "icon": "Compass",
+    "features": [
+      "Curated destination packages",
+      "Day-by-day itinerary view",
+      "Dynamic group pricing calculator",
+      "Reservation confirmation slip"
+    ],
+    "relatedServices": [
+      "Custom Web Portal Development (B2B/B2C)",
+      "On-Demand Delivery & Booking Apps"
+    ]
+  },
+  {
+    "demoNumber": 12,
+    "demoId": "ai-chatbot",
+    "title": "Enterprise AI Assistant",
+    "category": "AI, Machine Learning & Automation",
+    "description": "Interactive AI knowledge bot trained on Vishwakarma Web capabilities with intelligent responses, quick prompts, and history clear.",
+    "route": "/live-demos/ai-chatbot",
+    "icon": "Bot",
+    "features": [
+      "Natural language understanding simulation",
+      "Preloaded technology & pricing knowledge",
+      "Clickable suggestion chips",
+      "Real-time conversational streaming response"
+    ],
+    "relatedServices": [
+      "Custom AI Customer Support Chatbots",
+      "AI Sales & Lead Qualification Assistants",
+      "WhatsApp & Web AI Bot Integration",
+      "AI Content & Knowledge Base Search Systems"
+    ]
+  },
+  {
+    "demoNumber": 13,
+    "demoId": "analytics-dashboard",
+    "title": "Executive Analytics Dashboard",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "High-level BI dashboard with revenue metrics, visitor conversion charts, date range filtering, and KPI performance indicators.",
+    "route": "/live-demos/analytics-dashboard",
+    "icon": "BarChart3",
+    "features": [
+      "Interactive revenue & traffic charts",
+      "Custom date interval filter (7d, 30d, 90d, 1y)",
+      "Channel acquisition breakdown",
+      "Real-time active visitor tracker"
+    ],
+    "relatedServices": [
+      "Predictive Analytics & Demand Forecasting",
+      "Google Analytics 4 (GA4) & Tag Manager Tracking",
+      "Website Speed & Core Web Vitals Optimization"
+    ]
+  },
+  {
+    "demoNumber": 14,
+    "demoId": "inventory-management",
+    "title": "Inventory & Warehouse Control",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Smart inventory manager with live SKU stock adjustment, automatic low-stock alerts, warehouse reorder triggers, and audit logs.",
+    "route": "/live-demos/inventory-management",
+    "icon": "Package",
+    "features": [
+      "Live stock level adjustment (+ / -)",
+      "Automated low stock threshold warnings",
+      "Stock movement audit trail",
+      "Reorder batch generator"
+    ],
+    "relatedServices": [
+      "Inventory & Warehouse Management Software",
+      "Product Catalog & Inventory Management Systems",
+      "Supply Chain & Logistics Tracking Systems"
+    ]
+  },
+  {
+    "demoNumber": 15,
+    "demoId": "invoice-billing",
+    "title": "Invoice & Billing Generator",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Commercial invoice builder with dynamic line item addition, automated tax/GST calculations, discount adjustments, and print output.",
+    "route": "/live-demos/invoice-billing",
+    "icon": "Receipt",
+    "features": [
+      "Add/Remove dynamic invoice items",
+      "Configurable GST / Tax & Discount rates",
+      "Subtotal and grand total auto-calculator",
+      "One-click printable official invoice format"
+    ],
+    "relatedServices": [
+      "Accounting, Billing & Invoicing Software",
+      "Payment Gateway Integration (Razorpay, Stripe, PayU, UPI)",
+      "Subscription Box & Recurring Billing Setup"
+    ]
+  },
+  {
+    "demoNumber": 16,
+    "demoId": "admin-dashboard",
+    "title": "Enterprise Admin Console",
+    "category": "Custom Software & Enterprise Solutions",
+    "description": "Modular administrative console featuring system health metrics, role-based user management, permission toggles, and audit logs.",
+    "route": "/live-demos/admin-dashboard",
+    "icon": "ShieldCheck",
+    "features": [
+      "Sidebar with module navigation",
+      "Role-based access permission switch",
+      "User management datatable with search",
+      "System uptime & error rate monitor"
+    ],
+    "relatedServices": [
+      "Custom Admin Panel & Dashboard Development",
+      "SaaS (Software-as-a-Service) Product Engineering",
+      "Linux & Windows Server Administration"
+    ]
+  },
+  {
+    "demoNumber": 17,
+    "demoId": "mobile-app",
+    "title": "Interactive Smartphone Application",
+    "category": "Mobile Application Development",
+    "description": "Realistic mobile phone device frame running a responsive app with tab navigation, product showcase, cart screen, and account profile.",
+    "route": "/live-demos/mobile-app",
+    "icon": "Smartphone",
+    "features": [
+      "Realistic smartphone mockup frame",
+      "Bottom tab navigation bar",
+      "Fluid screen transitions",
+      "Interactive mobile shopping experience"
+    ],
+    "relatedServices": [
+      "Native Android App Development (Kotlin/Java)",
+      "Native iOS App Development (Swift)",
+      "Cross-Platform App Development (Flutter)",
+      "React Native Mobile App Development"
+    ]
+  },
+  {
+    "demoNumber": 18,
+    "demoId": "landing-page",
+    "title": "High-Converting Landing Page",
+    "category": "Website Design & Development",
+    "description": "Optimized conversion funnel landing page featuring attention-grabbing hero, social proof, interactive pricing calculator, and lead capture form.",
+    "route": "/live-demos/landing-page",
+    "icon": "Target",
+    "features": [
+      "High-impact visual value proposition",
+      "Sticky CTA conversion bar",
+      "Feature comparison matrix",
+      "Instant lead capture form with validation"
+    ],
+    "relatedServices": [
+      "Landing Page Design & Optimization",
+      "Conversion Rate Optimization (CRO)",
+      "Responsive Mobile-First Web Design"
+    ]
+  },
+  {
+    "demoNumber": 19,
+    "demoId": "cms-blog",
+    "title": "Headless CMS & Editorial Studio",
+    "category": "Content Management Systems (CMS)",
+    "description": "Publishing studio allowing real-time creation, editing, category tagging, draft-to-publish toggling, and live blog preview.",
+    "route": "/live-demos/cms-blog",
+    "icon": "PenTool",
+    "features": [
+      "Visual post creator & editor",
+      "Category & tag assignment",
+      "Published vs Draft status switch",
+      "Side-by-side reader preview"
+    ],
+    "relatedServices": [
+      "Blog & News Publishing Platforms",
+      "Custom WordPress Theme Development",
+      "Headless CMS Architecture & Integration"
+    ]
+  },
+  {
+    "demoNumber": 20,
+    "demoId": "automation-workflow",
+    "title": "Visual Automation Workflow Builder",
+    "category": "AI, Machine Learning & Automation",
+    "description": "Node-based automation designer where users select triggers, connect actions (email, webhook, CRM), and execute simulated workflows with real-time logs.",
+    "route": "/live-demos/automation-workflow",
+    "icon": "Workflow",
+    "features": [
+      "Visual trigger and action node chain",
+      "Configurable steps (Webhook -> AI Filter -> CRM -> WhatsApp)",
+      "Run Workflow simulation button",
+      "Live step-by-step execution output log"
+    ],
+    "relatedServices": [
+      "Business Workflow & Process Automation",
+      "Automated Email & CRM Trigger Workflows",
+      "Custom API & Webhook Integrations",
+      "CI/CD Automated Deployment Pipelines"
+    ]
+  }
+]
