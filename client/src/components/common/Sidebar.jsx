@@ -1,141 +1,375 @@
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { RiDashboardLine } from "react-icons/ri";
-import { FiSidebar } from "react-icons/fi";
-import { IoClose } from "react-icons/io5";
-import { FaUsers, FaBullseye } from "react-icons/fa";
+import {
+  LayoutDashboard,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  ShieldCheck,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { PiProjectorScreen } from "react-icons/pi";
-import { VscProject } from "react-icons/vsc";
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate();
-  const path = useLocation();
+  const location = useLocation();
+  const { user } = useAuth();
 
-  const { permissions, loading } = useAuth();
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
 
-  if (loading) return null;
-  if (!permissions) return null;
-
+  // Only keep Dashboard and Staff
   const menuItems = [
     {
       label: "Dashboard",
-      icon: <RiDashboardLine size={18} />,
+      icon: LayoutDashboard,
       path: "/dashboard",
-      visible: true,
+      badge: "Live",
     },
     {
-      label: "Services (108)",
-      icon: <PiProjectorScreen size={18} />,
-      path: "/services-admin",
-      visible: true,
-    },
-    {
-      label: "Staff",
-      icon: <FaUsers size={18} />,
+      label: "Staff & Team",
+      icon: Users,
       path: "/staff",
-      visible: permissions?.sidebar?.staff !== false,
+      badge: null,
     },
-    {
-      label: "Leads",
-      icon: <FaBullseye size={18} />,
-      path: "/lead",
-      visible: permissions?.sidebar?.leads !== false,
-    },
-    {
-      label: "Projects",
-      icon: <VscProject size={18} />,
-      path: "/projects",
-      visible: permissions?.sidebar?.projects !== false,
-    },
-  ].filter((item) => item.visible);
+  ];
 
   return (
     <>
       {/* DESKTOP SIDEBAR */}
-      <motion.div
-        animate={{ width: isSidebarOpen ? 220 : 70 }}
-        transition={{ duration: 0.3 }}
-        className="hidden lg:flex flex-col bg-white shadow-xl h-[calc(100vh-3.9rem)] fixed top-[3.9rem] left-0 z-40 overflow-y-auto"
+      <motion.aside
+        animate={{ width: isSidebarOpen ? 250 : 76 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="hidden lg:flex flex-col bg-white border-r border-gray-200/80 shadow-xs h-[calc(100vh-4rem)] fixed top-16 left-0 z-40 select-none overflow-hidden"
       >
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
-          <span className="font-bold text-lg">
-            {isSidebarOpen ? "Admin" : "A"}
-          </span>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-            <FiSidebar size={16} />
+        {/* SIDEBAR HEADER / TOGGLE */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 shrink-0 bg-gradient-to-r from-blue-50/40 via-white to-transparent">
+          <AnimatePresence mode="wait">
+            {isSidebarOpen ? (
+              <motion.div
+                key="open-brand"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2.5 overflow-hidden"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0756A5] to-[#082B59] flex items-center justify-center text-white font-black text-sm shadow-sm shrink-0">
+                  VK
+                </div>
+                <div className="leading-tight">
+                  <span className="text-xs font-black tracking-wider text-[#082B59] block uppercase">
+                    Vishwakarma
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#FF6900] tracking-wide block uppercase">
+                    Admin Suite
+                  </span>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mini-brand"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+                className="mx-auto"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0756A5] to-[#082B59] flex items-center justify-center text-white font-black text-sm shadow-sm">
+                  VK
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="w-7 h-7 rounded-lg text-gray-500 hover:text-[#0756A5] hover:bg-blue-50 flex items-center justify-center transition-colors"
+            title={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
           </button>
         </div>
 
-        <ul className="flex flex-col gap-2 mt-4 px-2">
+        {/* NAVIGATION ITEMS */}
+        <div className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
+          <div className="px-3 pb-2">
+            {isSidebarOpen && (
+              <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase">
+                Core Console
+              </span>
+            )}
+          </div>
+
           {menuItems.map((item) => {
-            const active = path.pathname === item.path;
+            const Icon = item.icon;
+            const active =
+              location.pathname === item.path ||
+              (item.path === "/dashboard" && location.pathname === "/admin");
 
             return (
-              <li key={item.path}>
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
+                  active
+                    ? "text-[#0756A5] font-bold bg-blue-50/80 shadow-xs"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                title={!isSidebarOpen ? item.label : undefined}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="activeAdminPill"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-[#0756A5] to-[#FF6900] rounded-r-full"
+                  />
+                )}
+
                 <div
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-                    ${active ? "bg-[#069ab7] text-white" : "hover:bg-[#4dd0eb] text-gray-700"}`}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
+                    active
+                      ? "bg-[#0756A5] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
+                  }`}
                 >
-                  <div className="text-lg">{item.icon}</div>
-                  <motion.span
-                    initial={false}
-                    animate={{
-                      opacity: isSidebarOpen ? 1 : 0,
-                      width: isSidebarOpen ? "auto" : 0,
-                    }}
-                    className="whitespace-nowrap overflow-hidden"
-                  >
-                    {item.label}
-                  </motion.span>
+                  <Icon size={16} />
                 </div>
-              </li>
+
+                {isSidebarOpen && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex-1 flex items-center justify-between overflow-hidden"
+                  >
+                    <span className="truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                        {item.badge}
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+              </button>
             );
           })}
-        </ul>
-      </motion.div>
 
-      {/* MOBILE SIDEBAR */}
-      <div className="lg:hidden">
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute ml-6 mt-[-50px] text-white z-50"
-        >
-          {isSidebarOpen ? <IoClose size={30} /> : <FiSidebar size={30} />}
-        </button>
-
-        <AnimatePresence>
+          {/* QUICK LINKS SECTION (When expanded) */}
           {isSidebarOpen && (
+            <div className="pt-6 px-3 space-y-2">
+              <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase block">
+                Public Portals
+              </span>
+
+              <a
+                href="/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-[#0756A5] hover:bg-blue-50/50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <ExternalLink size={13} />
+                  <span>Public Website</span>
+                </span>
+                <span className="text-[9px] font-mono text-gray-400">108 Services</span>
+              </a>
+
+              <a
+                href="/live-demos"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-[#FF6900] hover:bg-orange-50/50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles size={13} className="text-[#FF6900]" />
+                  <span>20 Live Demos</span>
+                </span>
+                <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                  Interactive
+                </span>
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* SIDEBAR FOOTER (USER & LOGOUT) */}
+        <div className="p-3 border-t border-gray-100 bg-gray-50/60 shrink-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0756A5] to-[#FF6900] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
+              </div>
+              {isSidebarOpen && (
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-gray-800 truncate">
+                    {user?.name || "Administrator"}
+                  </p>
+                  <p className="text-[10px] text-gray-400 flex items-center gap-1 truncate">
+                    <ShieldCheck size={10} className="text-[#0756A5]" />
+                    <span className="capitalize">{user?.role?.name || "Super Admin"}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {isSidebarOpen && (
+              <button
+                onClick={handleLogout}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut size={15} />
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.aside>
+
+      {/* MOBILE DRAWER */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 flex">
+            {/* Backdrop */}
             <motion.div
-              className="h-full w-[70%] absolute z-40 shadow-2xl bg-white"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs"
+            />
+
+            {/* Drawer */}
+            <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ duration: 0.3 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative w-72 bg-white h-full shadow-2xl flex flex-col z-10"
             >
-              <div className="p-4">
-                <ul className="space-y-3">
-                  {menuItems.map((item) => (
-                    <li key={item.path}>
-                      <div
-                        onClick={() => {
-                          navigate(item.path);
-                          setIsSidebarOpen(false);
-                        }}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100"
-                      >
-                        {item.icon}
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50/50 to-white">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0756A5] to-[#082B59] flex items-center justify-center text-white font-black text-sm shadow-sm">
+                    VK
+                  </div>
+                  <div>
+                    <span className="text-xs font-black tracking-wider text-[#082B59] block uppercase">
+                      Vishwakarma
+                    </span>
+                    <span className="text-[10px] font-semibold text-[#FF6900] tracking-wide block uppercase">
+                      Admin Workspace
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </div>
+
+              {/* Menu items */}
+              <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+                <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase px-2 block mb-1">
+                  Admin Navigation
+                </span>
+
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const active =
+                    location.pathname === item.path ||
+                    (item.path === "/dashboard" && location.pathname === "/admin");
+
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
+                        active
+                          ? "bg-blue-50 text-[#0756A5] shadow-xs"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} className={active ? "text-[#0756A5]" : "text-gray-500"} />
                         <span>{item.label}</span>
                       </div>
-                    </li>
-                  ))}
-                </ul>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+
+                <div className="pt-6 space-y-2 border-t border-gray-100 mt-6">
+                  <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase px-2 block">
+                    Public Portals
+                  </span>
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-2.5 rounded-xl text-xs text-gray-600 hover:bg-gray-50"
+                  >
+                    <span className="flex items-center gap-2">
+                      <ExternalLink size={14} />
+                      <span>Public Website</span>
+                    </span>
+                  </a>
+                  <a
+                    href="/live-demos"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-2.5 rounded-xl text-xs text-[#FF6900] hover:bg-orange-50/50"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Sparkles size={14} />
+                      <span>Live Demos Center</span>
+                    </span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Mobile Footer */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50/60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0756A5] to-[#FF6900] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-gray-800 truncate">
+                        {user?.name || "Admin"}
+                      </p>
+                      <p className="text-[10px] text-gray-400">Online</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 rounded-lg text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1"
+                  >
+                    <LogOut size={14} />
+                    <span>Exit</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

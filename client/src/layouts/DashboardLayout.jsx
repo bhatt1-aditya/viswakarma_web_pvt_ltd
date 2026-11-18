@@ -7,27 +7,31 @@ const DashboardLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-gray-900 antialiased selection:bg-[#0756A5] selection:text-white">
+      {/* TOPBAR */}
       <AuthNavbar setIsSidebarOpen={setIsSidebarOpen} />
 
-      <div className="mt-[3.9rem]">
+      {/* BODY WITH FIXED SIDEBAR */}
+      <div className="pt-16 flex-1 flex flex-col">
         {/* SIDEBAR */}
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
 
-        {/* MAIN */}
+        {/* MAIN CONTENT AREA */}
         <main
-          className={`h-[calc(100vh-3.9rem)] bg-gray-100 overflow-y-auto transition-all duration-300
-            ${isSidebarOpen ? "lg:ml-[220px]" : "lg:ml-[70px]"}
-          `}
+          className={`flex-1 flex flex-col transition-all duration-300 min-h-[calc(100vh-4rem)] ${
+            isSidebarOpen ? "lg:ml-[250px]" : "lg:ml-[76px]"
+          }`}
         >
-          {children}
+          <div className="flex-1">
+            {children}
+          </div>
           <FooterDashBoard />
         </main>
       </div>
-    </>
+    </div>
   );
 };
 

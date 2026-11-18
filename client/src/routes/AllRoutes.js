@@ -1,4 +1,5 @@
 import React from "react";
+import { Navigate } from "react-router-dom";
 
 // Auth & Admin Screens
 import Login from "../screens/nonAuth/Login";
@@ -6,10 +7,7 @@ import Register from "../screens/nonAuth/Register";
 import ForgotPassword from "../screens/nonAuth/ForgotPassword";
 import Dashboard from "../screens/auth/Dashboard";
 import Staff from "../screens/auth/Staff";
-import Lead from "../screens/auth/Lead";
-import Projects from "../screens/auth/Projects";
 import Profile from "../screens/auth/Profile";
-import Services from "../screens/auth/Services";
 
 // Public User Screens
 import Home from "../screens/users/Home";
@@ -51,11 +49,12 @@ import DemoAutomationWorkflow from "../screens/demos/DemoAutomationWorkflow";
 export const authRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
   { path: "/admin", component: <Dashboard /> },
-  { path: "/services-admin", component: <Services /> },
   { path: "/staff", component: <Staff /> },
-  { path: "/lead", component: <Lead /> },
-  { path: "/projects", component: <Projects /> },
   { path: "/profile", component: <Profile /> },
+  // All other admin paths redirect to dashboard
+  { path: "/services-admin", component: <Navigate to="/dashboard" replace /> },
+  { path: "/lead", component: <Navigate to="/dashboard" replace /> },
+  { path: "/projects", component: <Navigate to="/dashboard" replace /> },
 ];
 
 export const nonAuthRoutes = [
