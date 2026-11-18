@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -10,8 +10,6 @@ import {
   Users,
   Code2,
   CheckCircle2,
-  Cpu,
-  Zap,
   Server,
   Lock,
   Award,
@@ -19,7 +17,6 @@ import {
   Clock,
   BarChart3,
   Layers,
-  Globe,
   Terminal,
   Check,
 } from "lucide-react";
@@ -95,8 +92,6 @@ const engineeringFramework = [
 ];
 
 const AboutUs = () => {
-  const navigate = useNavigate();
-
   // Typewriter effect state
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
