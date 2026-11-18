@@ -5,7 +5,7 @@ import { generateToken } from "../utils/token.js";
 //  CREATE USER
 export const createUser = async (req, res) => {
   try {
-    const { name, email, phone, password, role, permissions } = req.body;
+    const { name, email, phone, password, role, permissions, state } = req.body;
 
     const isAdmin = ["admin", "superadmin"].includes(req.user?.role?.name);
     const canAdd = req.user?.permissions?.buttons?.staff?.add;
@@ -25,6 +25,7 @@ export const createUser = async (req, res) => {
       name,
       email,
       phone,
+      state: state || "All",
       password,
       role,
       permissions: permissions || undefined,
@@ -73,9 +74,17 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    let roleTitle = "staff";
+    if (user.role && typeof user.role === "object" && user.role.name) {
+      roleTitle = user.role.name;
+    } else if (user.role) {
+      const foundRole = await Role.findById(user.role);
+      if (foundRole) roleTitle = foundRole.name;
+    }
+
     const token = generateToken({
       id: user._id,
-      role: user.role?.name || "admin",
+      role: roleTitle,
       permissions: user.permissions || {},
     });
 
@@ -88,6 +97,9 @@ export const loginUser = async (req, res) => {
 
     const userObj = user.toObject();
     delete userObj.password;
+    if (typeof userObj.role === "string" || !userObj.role?.name) {
+      userObj.role = { _id: user.role, name: roleTitle };
+    }
 
     res.status(200).json({
       message: "Login successful",
@@ -150,7 +162,17 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    const userObj = user.toObject();
+    if (!userObj.role || typeof userObj.role === "string" || !userObj.role.name) {
+      if (user.role) {
+        const found = await Role.findById(user.role);
+        userObj.role = found ? found.toObject() : { name: "staff" };
+      } else {
+        userObj.role = { name: "staff" };
+      }
+    }
+
+    res.json(userObj);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -159,7 +181,7 @@ export const getUserById = async (req, res) => {
 //  UPDATE USER
 export const updateUser = async (req, res) => {
   try {
-    const { name, email, phone, role, permissions } = req.body;
+    const { name, email, phone, role, permissions, state } = req.body;
 
     const isAdmin = ["admin", "superadmin"].includes(req.user?.role?.name);
     const canEdit = req.user?.permissions?.buttons?.staff?.edit;
@@ -173,9 +195,14 @@ export const updateUser = async (req, res) => {
       if (!roleExists) return res.status(400).json({ message: "Invalid role" });
     }
 
+    const updateFields = { name, email, phone, role, permissions };
+    if (state !== undefined) {
+      updateFields.state = state;
+    }
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, phone, role, permissions },
+      updateFields,
       { new: true, runValidators: true },
     ).populate("role");
 

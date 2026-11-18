@@ -5,6 +5,7 @@ const inquirySchema = new mongoose.Schema(
     fullName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
+    state: { type: String, default: "All", trim: true },
     companyName: { type: String, default: "" },
     serviceRequired: { type: String, default: "General Consultation" },
     projectBudget: { type: String, default: "" },

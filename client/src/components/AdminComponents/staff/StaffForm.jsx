@@ -1,19 +1,6 @@
 import React, { useState } from "react";
 import API_BASE_URL from "../../../utils/apiConfig";
-
-const defaultPermissions = {
-  sidebar: {
-    dashboard: false,
-    leads: false,
-    staff: false,
-    projects: false,
-  },
-  buttons: {
-    staff: { add: false, edit: false, delete: false },
-    leads: { add: false, edit: false, delete: false, assign: false },
-    projects: { add: false, edit: false, delete: false, view: false },
-  },
-};
+import { INDIAN_STATES } from "../../../utils/indianStates";
 
 const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
   const [form, setForm] = useState({
@@ -22,10 +9,29 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
     phone: "",
     password: "",
     role: "",
+    state: "All",
     ...initial,
     permissions: {
-      ...defaultPermissions,
-      ...(initial?.permissions || {}),
+      sidebar: {
+        dashboard: false,
+        telecaller: true,
+        staff: false,
+        ...(initial?.permissions?.sidebar || {}),
+      },
+      buttons: {
+        telecaller: {
+          call: true,
+          updateStatus: true,
+          addNote: true,
+          ...(initial?.permissions?.buttons?.telecaller || {}),
+        },
+        staff: {
+          add: false,
+          edit: false,
+          delete: false,
+          ...(initial?.permissions?.buttons?.staff || {}),
+        },
+      },
     },
   });
 
@@ -57,19 +63,22 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
   }
 
   function toggleButton(section, action) {
-    setForm((f) => ({
-      ...f,
-      permissions: {
-        ...f.permissions,
-        buttons: {
-          ...f.permissions.buttons,
-          [section]: {
-            ...f.permissions.buttons[section],
-            [action]: !f.permissions.buttons[section][action],
+    setForm((f) => {
+      const sectionButtons = f.permissions?.buttons?.[section] || {};
+      return {
+        ...f,
+        permissions: {
+          ...f.permissions,
+          buttons: {
+            ...f.permissions?.buttons,
+            [section]: {
+              ...sectionButtons,
+              [action]: !sectionButtons[action],
+            },
           },
         },
-      },
-    }));
+      };
+    });
   }
 
   const submit = async () => {
@@ -169,7 +178,7 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
           </div>
         )}
 
-        <div className="col-span-2">
+        <div>
           <label className="text-xs text-gray-500 font-medium">Role</label>
           <select
             className={inputClass}
@@ -180,6 +189,22 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
             {roles.map((r) => (
               <option key={r._id} value={r._id}>
                 {r.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 font-medium">Assigned State (Telecaller & Region)</label>
+          <select
+            className={inputClass}
+            value={form.state || "All"}
+            onChange={(e) => update("state", e.target.value)}
+          >
+            <option value="All">All States (National / Head Office)</option>
+            {INDIAN_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </select>

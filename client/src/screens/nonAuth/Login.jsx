@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import ButtonLoader from "../../components/common/ButtonLoader";
 import API_BASE_URL from "../../utils/apiConfig";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -50,11 +52,22 @@ const Login = () => {
         }
       );
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
+      const userData = res.data.user || res.data.data;
+      login(userData, res.data.token);
+
+      const roleName = (userData?.role?.name || (typeof userData?.role === "string" ? userData.role : "")).toLowerCase();
+      const isAdmin = ["admin", "superadmin"].includes(roleName);
+
+      // Route user to their primary permitted tab
+      if (isAdmin || userData?.permissions?.sidebar?.dashboard) {
+        navigate("/dashboard");
+      } else if (userData?.permissions?.sidebar?.telecaller) {
+        navigate("/telecaller");
+      } else if (userData?.permissions?.sidebar?.staff) {
+        navigate("/staff");
+      } else {
+        navigate("/telecaller");
       }
-      localStorage.setItem("userData", JSON.stringify(res.data.user || res.data.data));
-      navigate("/dashboard");
     } catch (error) {
       setErrors({
         identifier: "",

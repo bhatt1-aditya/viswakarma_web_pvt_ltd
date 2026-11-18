@@ -17,7 +17,7 @@ const StaffTable = () => {
         <th className="px-4 py-3.5 text-left">
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck size={13} className="text-[#FF6900]" />
-            <span>Security Role</span>
+            <span>Role & Assigned State</span>
           </span>
         </th>
 

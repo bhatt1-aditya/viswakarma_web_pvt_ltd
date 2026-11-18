@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import categoriesData from "../../data/categoriesData.json";
 import API_BASE_URL from "../../utils/apiConfig";
+import { INDIAN_STATES } from "../../utils/indianStates";
 
 const contactHeadlinePhrases = [
   "Senior Software Architects.",
@@ -59,6 +60,7 @@ const Contact = () => {
     fullName: "",
     email: "",
     phone: "",
+    state: "Delhi (NCR)",
     companyName: "",
     serviceRequired: "Website Design & Development",
     projectBudget: "₹1,00,000 – ₹3,00,000",
@@ -475,6 +477,25 @@ const Contact = () => {
                     </div>
 
                     <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-700">State / Region (India) *</label>
+                      <select
+                        name="state"
+                        value={formData.state}
+                        onChange={handleChange}
+                        className="w-full px-3 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:outline-none text-xs bg-white font-medium"
+                        required
+                      >
+                        {INDIAN_STATES.map((st) => (
+                          <option key={st} value={st}>
+                            {st}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-bold text-gray-700">Company / Organization</label>
                       <input
                         type="text"
@@ -485,9 +506,7 @@ const Contact = () => {
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:outline-none text-xs transition-colors"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-gray-700">Service Category</label>
                       <select
@@ -503,7 +522,9 @@ const Contact = () => {
                         ))}
                       </select>
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-gray-700">Target Budget Bracket</label>
                       <select

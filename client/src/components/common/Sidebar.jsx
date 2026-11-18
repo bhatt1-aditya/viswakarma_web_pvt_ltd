@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
+  PhoneCall,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -16,28 +17,50 @@ import { useAuth } from "../../context/AuthContext";
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, permissions, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.clear();
+    logout();
     navigate("/login");
   };
 
-  // Only keep Dashboard and Staff
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  ).toLowerCase();
+  const isAdmin = ["admin", "superadmin"].includes(roleName);
+  const displayRole =
+    user?.role?.name ||
+    (typeof user?.role === "string" && user.role.trim()
+      ? user.role
+      : isAdmin
+      ? "Admin"
+      : "Telecaller Staff");
+
+  // Dynamic permission-based tab filtering: only show tabs that this user is granted
   const menuItems = [
     {
       label: "Dashboard",
       icon: LayoutDashboard,
       path: "/dashboard",
       badge: "Live",
+      allowed: isAdmin || permissions?.sidebar?.dashboard === true,
+    },
+    {
+      label: "Telecaller",
+      icon: PhoneCall,
+      path: "/telecaller",
+      badge: "Inbound",
+      allowed: isAdmin || permissions?.sidebar?.telecaller === true,
     },
     {
       label: "Staff & Team",
       icon: Users,
       path: "/staff",
       badge: null,
+      allowed: isAdmin || permissions?.sidebar?.staff === true,
     },
-  ];
+  ].filter((item) => item.allowed);
 
   return (
     <>
@@ -212,7 +235,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   </p>
                   <p className="text-[10px] text-gray-400 flex items-center gap-1 truncate">
                     <ShieldCheck size={10} className="text-[#0756A5]" />
-                    <span className="capitalize">{user?.role?.name || "Super Admin"}</span>
+                    <span className="capitalize">{displayRole}</span>
                   </p>
                 </div>
               )}

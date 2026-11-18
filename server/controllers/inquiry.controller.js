@@ -3,7 +3,7 @@ import Inquiry from "../models/inquiry.model.js";
 // SUBMIT INQUIRY (Public Contact Form)
 export const createInquiry = async (req, res) => {
   try {
-    const { fullName, email, phone, companyName, serviceRequired, projectBudget, projectTimeline, projectDescription, message } = req.body;
+    const { fullName, email, phone, state, companyName, serviceRequired, projectBudget, projectTimeline, projectDescription, message } = req.body;
     const finalDescription = projectDescription || message || "";
 
     if (!fullName || !phone || !email || !finalDescription) {
@@ -17,6 +17,7 @@ export const createInquiry = async (req, res) => {
       fullName,
       email,
       phone,
+      state: state || "All",
       companyName: companyName || "",
       serviceRequired: serviceRequired || "General Consultation",
       projectBudget: projectBudget || "",
@@ -38,10 +39,13 @@ export const createInquiry = async (req, res) => {
 // GET ALL INQUIRIES (Admin)
 export const getAllInquiries = async (req, res) => {
   try {
-    const { status, search, page = 1, limit = 20 } = req.query;
+    const { status, state, search, page = 1, limit = 50 } = req.query;
     const filter = {};
-    if (status && status !== "all") {
+    if (status && status !== "all" && status !== "All") {
       filter.status = status;
+    }
+    if (state && state !== "all" && state !== "All") {
+      filter.state = state;
     }
     if (search) {
       filter.$or = [

@@ -7,6 +7,7 @@ export const createQuoteRequest = async (req, res) => {
       fullName,
       email,
       phone,
+      state,
       companyName,
       serviceCategory,
       serviceName,
@@ -27,6 +28,7 @@ export const createQuoteRequest = async (req, res) => {
       fullName,
       email,
       phone,
+      state: state || "All",
       companyName: companyName || "",
       serviceCategory: serviceCategory || "Custom Solution",
       serviceName: serviceName || "Enterprise Development",
@@ -50,10 +52,22 @@ export const createQuoteRequest = async (req, res) => {
 // GET ALL QUOTE REQUESTS (Admin)
 export const getAllQuoteRequests = async (req, res) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, state, search, page = 1, limit = 50 } = req.query;
     const filter = {};
-    if (status && status !== "all") {
+    if (status && status !== "all" && status !== "All") {
       filter.status = status;
+    }
+    if (state && state !== "all" && state !== "All") {
+      filter.state = state;
+    }
+    if (search) {
+      filter.$or = [
+        { fullName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+        { serviceName: { $regex: search, $options: "i" } },
+        { serviceCategory: { $regex: search, $options: "i" } },
+      ];
     }
 
     const total = await QuoteRequest.countDocuments(filter);
@@ -100,6 +114,20 @@ export const updateQuoteStatus = async (req, res) => {
     }
 
     res.status(200).json({ success: true, message: "Quote updated", quote });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// DELETE QUOTE REQUEST
+export const deleteQuoteRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await QuoteRequest.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Quote request not found" });
+    }
+    res.status(200).json({ success: true, message: "Quote request deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

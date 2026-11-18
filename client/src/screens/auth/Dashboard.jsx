@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Clock,
   Phone,
+  PhoneCall,
   Mail,
 } from "lucide-react";
 import axios from "axios";
@@ -62,7 +63,20 @@ const itemVariants = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, permissions, loading: authLoading } = useAuth();
+
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  ).toLowerCase();
+  const isAdmin = ["admin", "superadmin"].includes(roleName);
+  const displayRole =
+    user?.role?.name ||
+    (typeof user?.role === "string" && user.role.trim()
+      ? user.role
+      : isAdmin
+      ? "Admin"
+      : "Staff Member");
 
   const [stats, setStats] = useState({
     totalStaff: 1,
@@ -72,6 +86,20 @@ const Dashboard = () => {
   });
   const [recentStaff, setRecentStaff] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Permission guard: if user does not have dashboard access, route them to their permitted tab
+  useEffect(() => {
+    if (!authLoading && user) {
+      const hasDashboardAccess = isAdmin || permissions?.sidebar?.dashboard === true;
+      if (!hasDashboardAccess) {
+        if (permissions?.sidebar?.telecaller === true) {
+          navigate("/telecaller", { replace: true });
+        } else if (permissions?.sidebar?.staff === true) {
+          navigate("/staff", { replace: true });
+        }
+      }
+    }
+  }, [authLoading, user, isAdmin, permissions, navigate]);
 
   // Time-aware greeting
   const getGreeting = () => {
@@ -145,8 +173,8 @@ const Dashboard = () => {
         const rolesList = Array.isArray(rolesRes.data?.data)
           ? rolesRes.data.data
           : Array.isArray(rolesRes.data)
-          ? rolesRes.data
-          : [];
+            ? rolesRes.data
+            : [];
         if (rolesList.length > 0) {
           setStats((prev) => ({
             ...prev,
@@ -177,7 +205,7 @@ const Dashboard = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-7xl mx-auto"
+      className="px-4 sm:px-6 lg:px-8 py-8 space-y-8 mx-auto"
     >
       {/* ── 1. ANIMATED HERO WELCOME BANNER ── */}
       <motion.div
@@ -221,7 +249,7 @@ const Dashboard = () => {
               <span>•</span>
               <span className="flex items-center gap-1.5">
                 <Clock size={13} />
-                <span>Role: <strong className="text-white capitalize">{user?.role?.name || "Super Admin"}</strong></span>
+                <span>Role: <strong className="text-white capitalize">{displayRole}</strong></span>
               </span>
             </div>
           </div>
@@ -229,21 +257,29 @@ const Dashboard = () => {
           {/* Quick Hero Actions */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
             <button
-              onClick={() => navigate("/staff")}
+              onClick={() => navigate("/telecaller")}
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white font-bold text-xs shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
+              <PhoneCall size={16} />
+              <span>Telecaller Queue</span>
+            </button>
+
+            <button
+              onClick={() => navigate("/staff")}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-xs border border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
               <UserPlus size={16} />
-              <span>Manage Staff Team</span>
+              <span>Manage Staff</span>
             </button>
 
             <a
               href="/"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-xs border border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs backdrop-blur-xs border border-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              <span>View Public Portal</span>
-              <ExternalLink size={14} />
+              <span>Site</span>
+              <ExternalLink size={13} />
             </a>
           </div>
         </div>
@@ -484,6 +520,26 @@ const Dashboard = () => {
 
             <div className="space-y-3">
               <button
+                onClick={() => navigate("/telecaller")}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-orange-50/80 to-amber-50/50 hover:from-orange-100 hover:to-amber-100 border border-orange-200/70 flex items-center justify-between transition-all group text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FF6900] text-white flex items-center justify-center shadow-xs">
+                    <PhoneCall size={16} />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-800 group-hover:text-[#FF6900] block">
+                      Telecaller Inbound Queue
+                    </span>
+                    <span className="text-[10px] text-gray-500">
+                      View project applications by state
+                    </span>
+                  </div>
+                </div>
+                <ArrowRight size={14} className="text-gray-400 group-hover:text-[#FF6900] transition-transform group-hover:translate-x-0.5" />
+              </button>
+
+              <button
                 onClick={() => navigate("/staff")}
                 className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/40 hover:from-blue-100 hover:to-indigo-100/70 border border-blue-200/60 flex items-center justify-between transition-all group text-left"
               >
@@ -496,7 +552,7 @@ const Dashboard = () => {
                       Add New Staff Member
                     </span>
                     <span className="text-[10px] text-gray-500">
-                      Provision credentials & assign roles
+                      Provision credentials, role & state
                     </span>
                   </div>
                 </div>

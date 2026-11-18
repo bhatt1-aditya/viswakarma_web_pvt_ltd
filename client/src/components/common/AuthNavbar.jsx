@@ -10,19 +10,33 @@ import {
   Sparkles,
   ShieldCheck,
   Activity,
+  PhoneCall,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const AuthNavbar = ({ setIsSidebarOpen }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, permissions, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
-    localStorage.clear();
+    logout();
     navigate("/login");
   };
+
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  ).toLowerCase();
+  const isAdmin = ["admin", "superadmin"].includes(roleName);
+  const displayRole =
+    user?.role?.name ||
+    (typeof user?.role === "string" && user.role.trim()
+      ? user.role
+      : isAdmin
+      ? "Admin"
+      : "Telecaller Staff");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -62,7 +76,7 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                 </span>
               </div>
               <span className="text-[10px] text-gray-400 font-medium tracking-tight">
-                Enterprise Workforce Console
+                Web Pvt Ltd
               </span>
             </div>
           </Link>
@@ -70,15 +84,7 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
 
         {/* CENTER / STATUS: TELEMETRY BADGE (Hidden on smallest mobile) */}
         <div className="hidden md:flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50/80 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>REST API Active</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-[11px] font-mono text-emerald-800">99.98% SLA</span>
-          </div>
+
         </div>
 
         {/* RIGHT: PORTAL SHORTCUTS + USER DROPDOWN */}
@@ -115,18 +121,17 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
 
               <div className="hidden sm:flex flex-col text-left leading-tight">
                 <span className="text-xs font-bold text-gray-800 max-w-[120px] truncate">
-                  {user?.name || "Administrator"}
+                  {user?.name || "User"}
                 </span>
                 <span className="text-[10px] text-gray-400 font-medium capitalize">
-                  {user?.role?.name || "Admin"}
+                  {displayRole}
                 </span>
               </div>
 
               <ChevronDown
                 size={14}
-                className={`text-gray-400 transition-transform duration-200 ${
-                  isDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
-                }`}
+                className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
+                  }`}
               />
             </button>
 
@@ -142,36 +147,51 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                   {/* User info box */}
                   <div className="p-3 bg-gradient-to-r from-blue-50/60 to-orange-50/30 rounded-xl mb-1 border border-blue-100/50">
                     <p className="text-xs font-bold text-[#082B59] truncate">
-                      {user?.name || "Administrator"}
+                      {user?.name || "Staff Member"}
                     </p>
                     <p className="text-[11px] text-gray-500 font-mono truncate">
-                      {user?.email || "admin@vishwakarma.com"}
+                      {user?.email || "user@vishwakarma.com"}
                     </p>
                     <div className="mt-1 flex items-center gap-1 text-[10px] text-[#0756A5] font-semibold">
                       <ShieldCheck size={11} />
-                      <span className="capitalize">{user?.role?.name || "Super Admin"}</span>
+                      <span className="capitalize">{displayRole}</span>
                     </div>
                   </div>
 
-                  {/* Menu Options */}
+                  {/* Menu Options - Dynamic Permission Filtered */}
                   <div className="space-y-0.5">
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
-                    >
-                      <Activity size={14} className="text-[#0756A5]" />
-                      <span>Console Dashboard</span>
-                    </Link>
+                    {(isAdmin || permissions?.sidebar?.dashboard === true) && (
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
+                      >
+                        <Activity size={14} className="text-[#0756A5]" />
+                        <span>Console Dashboard</span>
+                      </Link>
+                    )}
 
-                    <Link
-                      to="/staff"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
-                    >
-                      <User size={14} className="text-[#0756A5]" />
-                      <span>Staff & Team Access</span>
-                    </Link>
+                    {(isAdmin || permissions?.sidebar?.telecaller === true) && (
+                      <Link
+                        to="/telecaller"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
+                      >
+                        <PhoneCall size={14} className="text-[#FF6900]" />
+                        <span>Telecaller Portal</span>
+                      </Link>
+                    )}
+
+                    {(isAdmin || permissions?.sidebar?.staff === true) && (
+                      <Link
+                        to="/staff"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
+                      >
+                        <User size={14} className="text-[#0756A5]" />
+                        <span>Staff & Team Access</span>
+                      </Link>
+                    )}
 
                     <div className="border-t border-gray-100 my-1"></div>
 

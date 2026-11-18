@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
@@ -11,6 +12,7 @@ import {
   Trash2,
   Mail,
   Phone,
+  MapPin,
   Lock,
   Plus,
   Save,
@@ -73,11 +75,24 @@ function Modal({ title, children, onClose }) {
 }
 
 const Staff = () => {
-  const { permissions, user } = useAuth();
-  const isAdmin = ["admin", "superadmin"].includes(user?.role?.name?.toLowerCase());
+  const navigate = useNavigate();
+  const { permissions, user, loading: authLoading } = useAuth();
+  const roleName = (user?.role?.name || (typeof user?.role === "string" ? user.role : "")).toLowerCase();
+  const isAdmin = ["admin", "superadmin"].includes(roleName);
   const canEdit = isAdmin || permissions?.buttons?.staff?.edit;
   const canDelete = isAdmin || permissions?.buttons?.staff?.delete;
-  const hasStaffAccess = isAdmin || permissions?.buttons?.staff;
+  const hasStaffAccess = isAdmin || permissions?.sidebar?.staff === true;
+
+  // Route guard: if user does not have permission for staff section, redirect
+  useEffect(() => {
+    if (!authLoading && user && !hasStaffAccess) {
+      if (permissions?.sidebar?.telecaller === true) {
+        navigate("/telecaller", { replace: true });
+      } else if (permissions?.sidebar?.dashboard === true) {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [authLoading, user, hasStaffAccess, permissions, navigate]);
 
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -214,7 +229,7 @@ const Staff = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 max-w-7xl mx-auto"
+      className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 mx-auto"
     >
       {/* ── HEADER WITH ACTIONS ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -368,15 +383,21 @@ const Staff = () => {
                       </div>
                     </td>
 
-                    {/* Role */}
+                    {/* Role & State */}
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${getRoleBadgeClass(
-                          u.role?.name
-                        )}`}
-                      >
-                        {u.role?.name || "Member"}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${getRoleBadgeClass(
+                            u.role?.name
+                          )}`}
+                        >
+                          {u.role?.name || "Member"}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[9px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                          <MapPin size={9} className="text-[#FF6900]" />
+                          <span>{u.state || "All States"}</span>
+                        </span>
+                      </div>
                     </td>
 
                     {/* Phone */}
@@ -394,8 +415,8 @@ const Staff = () => {
                           const perms = Array.isArray(u.permissions)
                             ? u.permissions
                             : typeof u.permissions === "object" && u.permissions !== null
-                            ? Object.keys(u.permissions)
-                            : [];
+                              ? Object.keys(u.permissions)
+                              : [];
 
                           if (perms.length === 0) {
                             return (
@@ -436,11 +457,10 @@ const Staff = () => {
                             title={canEdit ? "Edit Staff" : "No permission"}
                             onClick={() => canEdit && setModal({ mode: "edit", user: u })}
                             disabled={!canEdit}
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              canEdit
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${canEdit
                                 ? "text-gray-500 hover:text-[#0756A5] hover:bg-blue-50"
                                 : "text-gray-300 cursor-not-allowed"
-                            }`}
+                              }`}
                           >
                             <Edit2 size={13} />
                           </button>
@@ -449,11 +469,10 @@ const Staff = () => {
                             title={canDelete ? "Remove Staff" : "No permission"}
                             onClick={() => canDelete && setConfirm(u)}
                             disabled={!canDelete}
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              canDelete
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${canDelete
                                 ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
                                 : "text-gray-300 cursor-not-allowed"
-                            }`}
+                              }`}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -482,9 +501,9 @@ const Staff = () => {
             initial={
               modal.mode === "edit"
                 ? {
-                    ...modal.user,
-                    role: modal.user.role?._id || modal.user.role || "",
-                  }
+                  ...modal.user,
+                  role: modal.user.role?._id || modal.user.role || "",
+                }
                 : {}
             }
             roles={roles}
