@@ -155,8 +155,8 @@ const MainNavbar = () => {
                   <VscCallIncoming className="text-white" size={20} />
                 </span>
                 <div className="flex flex-col">
-                  <a href="tel:+917077560648" className="text-sm font-medium">
-                    +91 7077560648
+                  <a href="tel:+917008156600" className="text-sm font-medium">
+                    +91 7008156600
                   </a>
                   <p className="text-sm text-[#4f4f4f]">Call Us Today</p>
                 </div>

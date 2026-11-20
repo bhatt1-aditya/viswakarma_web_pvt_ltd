@@ -78,7 +78,7 @@ const CompanyNavbar = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <a
-              href="tel:+917077560648"
+              href="tel:+917008156600"
               className="flex items-center gap-1.5 hover:text-[#FF6900] transition-colors"
             >
               <Phone size={13} className="text-[#FF6900]" />
@@ -373,7 +373,7 @@ const CompanyNavbar = () => {
               </Link>
 
               <div className="pt-2 text-center text-xs text-gray-500">
-                Call Us: <a href="tel:+917077560648" className="font-semibold text-gray-800">+91 70775 60648</a>
+                Call Us: <a href="tel:+917008156600" className="font-semibold text-gray-800">+91 70775 60648</a>
               </div>
             </div>
           </div>

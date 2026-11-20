@@ -104,7 +104,7 @@ const CompanyFooter = () => {
                   <Github size={18} />
                 </a>
                 <a
-                  href="https://wa.me/917077560648"
+                  href="https://wa.me/917008156600"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="WhatsApp"
@@ -170,7 +170,7 @@ const CompanyFooter = () => {
 
               <div className="flex items-center gap-3">
                 <Phone size={15} className="text-[#0756A5] shrink-0" />
-                <a href="tel:+917077560648" className="hover:text-white transition-colors font-medium">
+                <a href="tel:+917008156600" className="hover:text-white transition-colors font-medium">
                   +91 70775 60648
                 </a>
               </div>
@@ -190,7 +190,7 @@ const CompanyFooter = () => {
 
             <div className="pt-2">
               <a
-                href="https://wa.me/917077560648"
+                href="https://wa.me/917008156600"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-600 hover:text-white transition-all"

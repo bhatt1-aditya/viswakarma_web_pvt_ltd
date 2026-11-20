@@ -189,7 +189,7 @@ const Contact = () => {
 
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <a
-                    href="https://wa.me/917077560648"
+                    href="https://wa.me/917008156600"
                     target="_blank"
                     rel="noreferrer"
                     className="px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2"
@@ -349,7 +349,7 @@ const Contact = () => {
 
                   <div className="flex items-center gap-3">
                     <Phone size={18} className="text-[#0756A5] shrink-0" />
-                    <a href="tel:+917077560648" className="hover:text-white transition-colors font-medium">
+                    <a href="tel:+917008156600" className="hover:text-white transition-colors font-medium">
                       +91 70775 60648
                     </a>
                   </div>
@@ -372,7 +372,7 @@ const Contact = () => {
                     Direct WhatsApp Support:
                   </span>
                   <a
-                    href="https://wa.me/917077560648"
+                    href="https://wa.me/917008156600"
                     target="_blank"
                     rel="noreferrer"
                     className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
@@ -672,7 +672,7 @@ const Contact = () => {
                   </Link>
 
                   <a
-                    href="tel:+917077560648"
+                    href="tel:+917008156600"
                     className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md"
                   >
                     Call Technical Support: +91 70775 60648

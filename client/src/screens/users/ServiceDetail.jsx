@@ -316,7 +316,7 @@ const ServiceDetail = () => {
                 </Link>
 
                 <a
-                  href="https://wa.me/917077560648"
+                  href="https://wa.me/917008156600"
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider text-center block shadow-md hover:bg-emerald-600 transition-all"
