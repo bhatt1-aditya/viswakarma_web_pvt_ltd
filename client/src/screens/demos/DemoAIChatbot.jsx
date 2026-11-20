@@ -27,7 +27,7 @@ const preconfiguredQA = [
   },
   {
     triggers: ["contact", "phone", "email", "office", "address", "location"],
-    answer: "You can reach Vishwakarma Web Private Limited at +91 70775 60648 or vishwakarmawebprivatelimited@gmail.com. Our corporate engineering center is located at Tech Hub Tower, Sector 62, Noida, Uttar Pradesh, India.",
+    answer: "You can reach Vishwakarma Web Private Limited at +91  +91 7684931759, 7008156600 or vishwakarmawebprivatelimited@gmail.com. Our corporate engineering center is located at Tech Hub Tower, Sector 62, Noida, Uttar Pradesh, India.",
   },
 ];
 
