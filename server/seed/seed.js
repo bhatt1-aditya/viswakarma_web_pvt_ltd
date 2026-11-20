@@ -101,8 +101,8 @@ const seedDatabase = async () => {
       companyName: "Vishwakarma Web Private Limited",
       tagline: "Transforming Ideas Into Powerful Digital Experiences",
       email: "vishwakarmawebprivatelimited@gmail.com",
-      phone: "+91 70775 60648",
-      whatsapp: "+91 70775 60648",
+      phone: "+91  +91 7684931759, 7008156600",
+      whatsapp: "+91  +91 7684931759, 7008156600",
       address: "Odisha Balangir Bandabahal Main Road Bus Station Pande Computer, 767022",
       workingHours: "Mon - Sat: 9:00 AM - 7:00 PM IST",
       socialLinks: {

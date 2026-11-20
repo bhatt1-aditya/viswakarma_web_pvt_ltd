@@ -171,7 +171,7 @@ const CompanyFooter = () => {
               <div className="flex items-center gap-3">
                 <Phone size={15} className="text-[#0756A5] shrink-0" />
                 <a href="tel:+917008156600" className="hover:text-white transition-colors font-medium">
-                  +91 70775 60648
+                  +91 7684931759, 7008156600
                 </a>
               </div>
 
