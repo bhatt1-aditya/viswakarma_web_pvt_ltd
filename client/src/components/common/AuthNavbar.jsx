@@ -51,7 +51,7 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-gray-200/80 z-50 shadow-xs">
-      <div className="h-full px-4 sm:px-6 flex items-center justify-between">
+      <div className="h-full px-2 sm:px-4 flex items-center justify-between">
         {/* LEFT: MOBILE TOGGLE + BRAND LOGO */}
         <div className="flex items-center gap-3">
           <button
