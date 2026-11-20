@@ -344,7 +344,7 @@ const Contact = () => {
                 <div className="space-y-4 text-xs text-gray-300">
                   <div className="flex items-start gap-3">
                     <MapPin size={18} className="text-[#FF6900] shrink-0 mt-0.5" />
-                    <span>Tech Hub Tower, Sector 62, Noida, Uttar Pradesh 201301, India</span>
+                    <span>Odisha Balangir Bandabahal Main Road Bus Station Pande Computer, 767022</span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -356,8 +356,8 @@ const Contact = () => {
 
                   <div className="flex items-center gap-3">
                     <Mail size={18} className="text-[#0756A5] shrink-0" />
-                    <a href="mailto:contact@vishwakarmaweb.com" className="hover:text-white transition-colors">
-                      contact@vishwakarmaweb.com
+                    <a href="mailto:vishwakarmawebprivatelimited@gmail.com" className="hover:text-white transition-colors">
+                      vishwakarmawebprivatelimited@gmail.com
                     </a>
                   </div>
 

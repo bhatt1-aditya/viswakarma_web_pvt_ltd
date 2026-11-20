@@ -85,11 +85,11 @@ const CompanyNavbar = () => {
               <span>+91 70775 60648</span>
             </a>
             <a
-              href="mailto:contact@vishwakarmaweb.com"
+              href="mailto:vishwakarmawebprivatelimited@gmail.com"
               className="flex items-center gap-1.5 hover:text-[#FF6900] transition-colors"
             >
               <Mail size={13} className="text-[#FF6900]" />
-              <span>contact@vishwakarmaweb.com</span>
+              <span>vishwakarmawebprivatelimited@gmail.com</span>
             </a>
           </div>
           <div className="flex items-center gap-4">

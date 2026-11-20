@@ -52,7 +52,7 @@ const PrivacyPolicy = () => {
 
           <h3 className="text-base font-bold text-[#082B59] pt-2">4. Contact Information</h3>
           <p>
-            If you have questions regarding this Privacy Policy, please contact our Data Governance Officer at <a href="mailto:contact@vishwakarmaweb.com" className="text-[#0756A5] font-bold">contact@vishwakarmaweb.com</a>.
+            If you have questions regarding this Privacy Policy, please contact our Data Governance Officer at <a href="mailto:vishwakarmawebprivatelimited@gmail.com" className="text-[#0756A5] font-bold">vishwakarmawebprivatelimited@gmail.com</a>.
           </p>
         </div>
       </div>

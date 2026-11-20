@@ -27,7 +27,7 @@ const preconfiguredQA = [
   },
   {
     triggers: ["contact", "phone", "email", "office", "address", "location"],
-    answer: "You can reach Vishwakarma Web Private Limited at +91 70775 60648 or contact@vishwakarmaweb.com. Our corporate engineering center is located at Tech Hub Tower, Sector 62, Noida, Uttar Pradesh, India.",
+    answer: "You can reach Vishwakarma Web Private Limited at +91 70775 60648 or vishwakarmawebprivatelimited@gmail.com. Our corporate engineering center is located at Tech Hub Tower, Sector 62, Noida, Uttar Pradesh, India.",
   },
 ];
 
@@ -163,32 +163,28 @@ const DemoAIChatbot = () => {
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`flex gap-2.5 max-w-[85%] ${
-                m.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-              }`}
+              className={`flex gap-2.5 max-w-[85%] ${m.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
+                }`}
             >
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
-                  m.sender === "user"
+                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${m.sender === "user"
                     ? "bg-[#FF6900] text-white"
                     : "bg-[#0756A5] text-white"
-                }`}
+                  }`}
               >
                 {m.sender === "user" ? <User size={14} /> : <Bot size={14} />}
               </div>
 
               <div
-                className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
-                  m.sender === "user"
+                className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm ${m.sender === "user"
                     ? "bg-[#0756A5] text-white rounded-tr-none"
                     : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
-                }`}
+                  }`}
               >
                 <p>{m.text}</p>
                 <span
-                  className={`text-[9px] block mt-1.5 ${
-                    m.sender === "user" ? "text-blue-200 text-right" : "text-gray-400"
-                  }`}
+                  className={`text-[9px] block mt-1.5 ${m.sender === "user" ? "text-blue-200 text-right" : "text-gray-400"
+                    }`}
                 >
                   {m.time}
                 </span>

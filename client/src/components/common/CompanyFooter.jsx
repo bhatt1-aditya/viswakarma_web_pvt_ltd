@@ -165,7 +165,7 @@ const CompanyFooter = () => {
             <div className="space-y-3 text-xs text-gray-400">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="text-[#FF6900] shrink-0 mt-0.5" />
-                <span>Tech Hub Tower, Sector 62, Noida, Uttar Pradesh 201301, India</span>
+                <span>Odisha Balangir Bandabahal Main Road Bus Station Pande Computer, 767022</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -177,8 +177,8 @@ const CompanyFooter = () => {
 
               <div className="flex items-center gap-3">
                 <Mail size={15} className="text-[#0756A5] shrink-0" />
-                <a href="mailto:contact@vishwakarmaweb.com" className="hover:text-white transition-colors">
-                  contact@vishwakarmaweb.com
+                <a href="mailto:vishwakarmawebprivatelimited@gmail.com" className="hover:text-white transition-colors">
+                  vishwakarmawebprivatelimited@gmail.com
                 </a>
               </div>
 

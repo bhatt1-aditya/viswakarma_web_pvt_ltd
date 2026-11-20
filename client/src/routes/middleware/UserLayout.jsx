@@ -9,7 +9,7 @@ const UserLayout = ({ children }) => {
   };
 
   const handleEmailClick = () => {
-    window.location.href = "mailto:contact@vishwakarmaweb.com";
+    window.location.href = "mailto:vishwakarmawebprivatelimited@gmail.com";
   };
 
   return (

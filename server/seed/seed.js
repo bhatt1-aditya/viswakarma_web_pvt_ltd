@@ -24,7 +24,7 @@ const __dirname = path.dirname(__filename);
 // DNS resolution fix for MongoDB Atlas SRV
 try {
   dns.setServers(["8.8.8.8", "8.8.4.4"]);
-} catch (e) {}
+} catch (e) { }
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
@@ -100,10 +100,10 @@ const seedDatabase = async () => {
     await WebsiteSettings.create({
       companyName: "Vishwakarma Web Private Limited",
       tagline: "Transforming Ideas Into Powerful Digital Experiences",
-      email: "contact@vishwakarmaweb.com",
+      email: "vishwakarmawebprivatelimited@gmail.com",
       phone: "+91 70775 60648",
       whatsapp: "+91 70775 60648",
-      address: "Tech Hub Tower, Sector 62, Noida, Uttar Pradesh 201301, India",
+      address: "Odisha Balangir Bandabahal Main Road Bus Station Pande Computer, 767022",
       workingHours: "Mon - Sat: 9:00 AM - 7:00 PM IST",
       socialLinks: {
         linkedin: "https://linkedin.com/company/vishwakarmaweb",

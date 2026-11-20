@@ -4,7 +4,7 @@ const websiteSettingsSchema = new mongoose.Schema(
   {
     companyName: { type: String, default: "Vishwakarma Web Private Limited" },
     tagline: { type: String, default: "Transforming Ideas Into Powerful Digital Experiences" },
-    email: { type: String, default: "contact@vishwakarmaweb.com" },
+    email: { type: String, default: "vishwakarmawebprivatelimited@gmail.com" },
     phone: { type: String, default: "+91 70775 60648" },
     whatsapp: { type: String, default: "+91 70775 60648" },
     address: { type: String, default: "Tech Hub Tower, Sector 62, Noida, Uttar Pradesh, India" },
