@@ -1,5 +1,4 @@
 import React from "react";
-import { ShieldCheck, HeartHandshake } from "lucide-react";
 
 const FooterDashBoard = () => {
   const current_year = new Date().getFullYear();
