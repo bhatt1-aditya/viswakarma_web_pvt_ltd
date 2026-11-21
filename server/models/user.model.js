@@ -23,7 +23,9 @@ const userSchema = new mongoose.Schema(
       buttons: {
         homeControl: {
           edit: { type: Boolean, default: false },
+          deploy: { type: Boolean, default: false },
           publish: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
         },
         telecaller: {
           call: { type: Boolean, default: true },

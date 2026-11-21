@@ -47,6 +47,26 @@ export const getHomeSettings = async (req, res) => {
 // UPDATE DYNAMIC HOME SCREEN CMS SETTINGS (Protected Admin/Staff)
 export const updateHomeSettings = async (req, res) => {
   try {
+    const roleName = (
+      req.user?.role?.name ||
+      (typeof req.user?.role === "string" ? req.user.role : "")
+    )
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const isAdmin = ["admin", "superadmin"].includes(roleName);
+    const canEdit = req.user?.permissions?.buttons?.homeControl?.edit === true;
+    const canDeploy =
+      req.user?.permissions?.buttons?.homeControl?.deploy === true ||
+      req.user?.permissions?.buttons?.homeControl?.publish === true;
+
+    if (!isAdmin && (!canEdit || !canDeploy)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Forbidden: You do not have 'edit' and 'deploy' permissions to modify home screen content.",
+      });
+    }
+
     const { homeContent } = req.body;
     let settings = await WebsiteSettings.findOne();
 

@@ -80,6 +80,33 @@ export const updateInquiryStatus = async (req, res) => {
     const { id } = req.params;
     const { status, noteText, author } = req.body;
 
+    const roleName = (
+      req.user?.role?.name ||
+      (typeof req.user?.role === "string" ? req.user.role : "")
+    )
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const isAdmin = ["admin", "superadmin"].includes(roleName);
+    const canUpdateStatus =
+      req.user?.permissions?.buttons?.telecaller?.updateStatus === true;
+    const canAddNote =
+      req.user?.permissions?.buttons?.telecaller?.addNote === true;
+
+    if (!isAdmin) {
+      if (status && !canUpdateStatus) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You do not have permission to update lead status.",
+        });
+      }
+      if (noteText && !canAddNote) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You do not have permission to add call notes.",
+        });
+      }
+    }
+
     const updateData = {};
     if (status) updateData.status = status;
 
@@ -108,6 +135,24 @@ export const updateInquiryStatus = async (req, res) => {
 // DELETE INQUIRY
 export const deleteInquiry = async (req, res) => {
   try {
+    const roleName = (
+      req.user?.role?.name ||
+      (typeof req.user?.role === "string" ? req.user.role : "")
+    )
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const isAdmin = ["admin", "superadmin"].includes(roleName);
+    const canDelete =
+      req.user?.permissions?.buttons?.telecaller?.delete === true ||
+      req.user?.permissions?.buttons?.leads?.delete === true;
+
+    if (!isAdmin && !canDelete) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to delete inquiries.",
+      });
+    }
+
     const { id } = req.params;
     await Inquiry.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Inquiry deleted" });

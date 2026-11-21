@@ -47,9 +47,19 @@ const getStatusBadge = (status = "New") => {
 const Telecaller = () => {
   const navigate = useNavigate();
   const { user, permissions, loading: authLoading } = useAuth();
-  const roleName = (user?.role?.name || (typeof user?.role === "string" ? user.role : "")).toLowerCase();
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
   const isAdmin = ["admin", "superadmin"].includes(roleName);
   const hasTelecallerAccess = isAdmin || permissions?.sidebar?.telecaller === true;
+
+  // Granular button permissions
+  const canCall = isAdmin || permissions?.buttons?.telecaller?.call === true;
+  const canUpdateStatus = isAdmin || permissions?.buttons?.telecaller?.updateStatus === true;
+  const canAddNote = isAdmin || permissions?.buttons?.telecaller?.addNote === true;
 
   // Route guard: if user does not have permission for telecaller section, redirect
   useEffect(() => {
@@ -165,6 +175,10 @@ const Telecaller = () => {
 
   // Handle status update
   const handleUpdateStatus = async (item, newStatus) => {
+    if (!canUpdateStatus) {
+      toast.error("Permission Denied: You do not have permission to update lead status.");
+      return;
+    }
     try {
       const endpoint = item.type === "project" ? `/quotes/status/${item._id}` : `/inquiries/status/${item._id}`;
       const token = localStorage.getItem("token");
@@ -181,12 +195,16 @@ const Telecaller = () => {
         prev.map((i) => (i._id === item._id ? { ...i, status: newStatus } : i))
       );
     } catch (err) {
-      toast.error("Failed to update status");
+      toast.error(err.response?.data?.message || "Failed to update status");
     }
   };
 
   // Handle call note addition
   const handleSaveNote = async () => {
+    if (!canAddNote) {
+      toast.error("Permission Denied: You do not have permission to add call notes.");
+      return;
+    }
     if (!noteText.trim() || !selectedInquiry) return;
     setSavingNote(true);
     try {
@@ -217,7 +235,7 @@ const Telecaller = () => {
       setNoteText("");
       setNoteModalOpen(false);
     } catch (err) {
-      toast.error("Failed to save note");
+      toast.error(err.response?.data?.message || "Failed to save note");
     } finally {
       setSavingNote(false);
     }
@@ -474,11 +492,19 @@ const Telecaller = () => {
                   <div className="flex items-center gap-2 self-start sm:self-center">
                     <span className="text-[11px] font-semibold text-gray-400">Call Status:</span>
                     <select
+                      disabled={!canUpdateStatus}
                       value={item.status || "New"}
                       onChange={(e) => handleUpdateStatus(item, e.target.value)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold border outline-none cursor-pointer ${getStatusBadge(
-                        item.status
-                      )}`}
+                      title={
+                        !canUpdateStatus
+                          ? "Status update permission not granted by Admin"
+                          : "Change call status"
+                      }
+                      className={`px-3 py-1 rounded-xl text-xs font-bold border outline-none ${
+                        !canUpdateStatus
+                          ? "opacity-60 cursor-not-allowed bg-gray-100 text-gray-500 border-gray-200"
+                          : "cursor-pointer " + getStatusBadge(item.status)
+                      }`}
                     >
                       {STATUS_OPTIONS.map((st) => (
                         <option key={st} value={st}>
@@ -558,13 +584,23 @@ const Telecaller = () => {
                   {/* Telecaller Quick Action Buttons */}
                   <div className="flex items-center gap-2">
                     {/* Call Button */}
-                    <a
-                      href={`tel:${cleanPhone}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-[#0756A5] hover:bg-blue-100 text-xs font-bold transition-colors"
-                    >
-                      <PhoneCall size={13} />
-                      <span>Direct Call</span>
-                    </a>
+                    {canCall ? (
+                      <a
+                        href={`tel:${cleanPhone}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-[#0756A5] hover:bg-blue-100 text-xs font-bold transition-colors"
+                      >
+                        <PhoneCall size={13} />
+                        <span>Direct Call</span>
+                      </a>
+                    ) : (
+                      <span
+                        title="Direct Call permission not granted by Admin"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-bold cursor-not-allowed"
+                      >
+                        <PhoneCall size={13} />
+                        <span>Call Locked</span>
+                      </span>
+                    )}
 
                     {/* WhatsApp Button */}
                     <a
@@ -584,13 +620,23 @@ const Telecaller = () => {
                     {/* Add Call Log Note Button */}
                     <button
                       onClick={() => {
+                        if (!canAddNote) {
+                          toast.error("Permission Denied: You do not have permission to add call notes.");
+                          return;
+                        }
                         setSelectedInquiry(item);
                         setNoteModalOpen(true);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 text-[#FF6900] hover:bg-orange-100 text-xs font-bold transition-colors"
+                      disabled={!canAddNote}
+                      title={!canAddNote ? "Add Note permission not granted by Admin" : "Add Call Log"}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        canAddNote
+                          ? "bg-orange-50 text-[#FF6900] hover:bg-orange-100 cursor-pointer"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                      }`}
                     >
                       <Plus size={13} />
-                      <span>Add Call Log</span>
+                      <span>{canAddNote ? "Add Call Log" : "Note Locked"}</span>
                     </button>
                   </div>
                 </div>

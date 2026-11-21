@@ -77,10 +77,16 @@ function Modal({ title, children, onClose }) {
 const Staff = () => {
   const navigate = useNavigate();
   const { permissions, user, loading: authLoading } = useAuth();
-  const roleName = (user?.role?.name || (typeof user?.role === "string" ? user.role : "")).toLowerCase();
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
   const isAdmin = ["admin", "superadmin"].includes(roleName);
-  const canEdit = isAdmin || permissions?.buttons?.staff?.edit;
-  const canDelete = isAdmin || permissions?.buttons?.staff?.delete;
+  const canAdd = isAdmin || permissions?.buttons?.staff?.add === true;
+  const canEdit = isAdmin || permissions?.buttons?.staff?.edit === true;
+  const canDelete = isAdmin || permissions?.buttons?.staff?.delete === true;
   const hasStaffAccess = isAdmin || permissions?.sidebar?.staff === true;
 
   // Route guard: if user does not have permission for staff section, redirect
@@ -155,13 +161,24 @@ const Staff = () => {
   }, [loadUsers, loadRoles]);
 
   const handleDelete = async (targetUser) => {
+    if (!canDelete) {
+      showToast("Permission Denied: You do not have permission to delete staff.", "err");
+      return;
+    }
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/users/delete-user/${targetUser._id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Delete failed");
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.message || "Delete failed");
+      }
       showToast("Staff member removed successfully.");
       setConfirm(null);
       loadUsers();
@@ -256,7 +273,7 @@ const Staff = () => {
             </button>
           )}
 
-          {(isAdmin || permissions?.buttons?.staff?.add) && (
+          {canAdd && (
             <button
               onClick={() => setModal({ mode: "add" })}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white hover:from-[#064a8f] hover:to-[#072449] text-xs font-bold shadow-md hover:shadow-blue-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all"

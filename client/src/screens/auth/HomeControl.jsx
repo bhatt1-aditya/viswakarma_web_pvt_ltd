@@ -10,6 +10,7 @@ import {
   RefreshCw,
   LayoutTemplate,
   ShieldCheck,
+  ShieldAlert,
   Zap,
   Layers,
   Plus,
@@ -112,9 +113,22 @@ const HomeControl = () => {
   const navigate = useNavigate();
   const { user, permissions, authLoading } = useAuth();
 
-  const roleName = (user?.role?.name || (typeof user?.role === "string" ? user.role : "")).toLowerCase();
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
   const isAdmin = ["admin", "superadmin"].includes(roleName);
   const hasHomeControlAccess = isAdmin || permissions?.sidebar?.homeControl === true;
+
+  // Granular button permissions
+  const canEdit = isAdmin || permissions?.buttons?.homeControl?.edit === true;
+  const canDeploy =
+    isAdmin ||
+    permissions?.buttons?.homeControl?.deploy === true ||
+    permissions?.buttons?.homeControl?.publish === true;
+  const canDelete = isAdmin || permissions?.buttons?.homeControl?.delete === true;
 
   const [activeTab, setActiveTab] = useState("hero");
   const [loading, setLoading] = useState(true);
@@ -166,9 +180,18 @@ const HomeControl = () => {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Handle Save
+  // Handle Save / Deploy
   const handleSave = async (e) => {
     if (e) e.preventDefault();
+    if (!canEdit) {
+      showToast("Permission Denied: You do not have 'Edit' permission to update fields.", "err");
+      return;
+    }
+    if (!canDeploy) {
+      showToast("Permission Denied: You do not have 'Deploy / Publish' button permission.", "err");
+      return;
+    }
+
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
@@ -195,18 +218,27 @@ const HomeControl = () => {
     }
   };
 
-  // State Helpers
+  // State Helpers with Permission Guards
   const updateField = (field, value) => {
+    if (!canEdit) {
+      showToast("Edit permission not granted by Administrator.", "err");
+      return;
+    }
     setHomeContent((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleHeadlineChange = (index, value) => {
+    if (!canEdit) return;
     const updated = [...homeContent.heroHeadlines];
     updated[index] = value;
     setHomeContent((prev) => ({ ...prev, heroHeadlines: updated }));
   };
 
   const handleAddHeadline = () => {
+    if (!canEdit) {
+      showToast("Edit permission required to add phrases.", "err");
+      return;
+    }
     if (!newHeadlineInput.trim()) return;
     setHomeContent((prev) => ({
       ...prev,
@@ -216,6 +248,10 @@ const HomeControl = () => {
   };
 
   const handleRemoveHeadline = (index) => {
+    if (!canDelete) {
+      showToast("Permission Denied: You do not have 'Delete' button permission.", "err");
+      return;
+    }
     if (homeContent.heroHeadlines.length <= 1) {
       showToast("At least one headline phrase is required for typewriter animation.", "err");
       return;
@@ -225,6 +261,7 @@ const HomeControl = () => {
   };
 
   const handlePillarChange = (index, key, value) => {
+    if (!canEdit) return;
     const updated = [...homeContent.strategicPillars];
     updated[index] = { ...updated[index], [key]: value };
     setHomeContent((prev) => ({ ...prev, strategicPillars: updated }));
@@ -240,7 +277,7 @@ const HomeControl = () => {
           </div>
           <h2 className="text-xl font-bold text-[#082B59]">Access Restricted</h2>
           <p className="text-sm text-gray-500 leading-relaxed">
-            You do not possess the required permissions to modify the Home Screen CMS. Please request access from an Administrator via the Staff Management console.
+            You do not possess sidebar viewing permissions for the Home Screen CMS. Please request access from an Administrator in the Staff & Team console.
           </p>
           <div className="pt-2">
             <button
@@ -293,8 +330,8 @@ const HomeControl = () => {
       </AnimatePresence>
 
       {/* ── HEADER WITH ACTIONS ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-xs">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between lg:flex-nowrap gap-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-xs">
+        <div className="flex-1 min-w-0">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#0756A5] border border-blue-100 text-xs font-bold uppercase tracking-wider mb-2">
             <LayoutTemplate size={13} />
             <span>Content Management System</span>
@@ -302,12 +339,12 @@ const HomeControl = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-[#082B59] tracking-tight">
             Home Screen Control Center
           </h1>
-          <p className="text-sm text-gray-500 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
             Manage public homepage content, typewriter headlines, 7 strategic value pillars, enterprise SLA parameters, and conversion calls-to-action in real time.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
           <a
             href="/"
             target="_blank"
@@ -329,13 +366,29 @@ const HomeControl = () => {
 
           <button
             onClick={handleSave}
-            disabled={saving || loading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
+            disabled={saving || loading || !canDeploy || !canEdit}
+            title={
+              !canEdit
+                ? "Edit permission required to save"
+                : !canDeploy
+                ? "Deploy permission not granted by Admin"
+                : "Save & publish changes live"
+            }
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${
+              !canDeploy || !canEdit
+                ? "bg-gray-400 cursor-not-allowed opacity-60"
+                : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] hover:shadow-glowOrange"
+            }`}
           >
             {saving ? (
               <>
                 <RefreshCw size={14} className="animate-spin" />
                 <span>Publishing...</span>
+              </>
+            ) : !canDeploy ? (
+              <>
+                <Lock size={14} />
+                <span>Deploy Restricted</span>
               </>
             ) : (
               <>
@@ -346,6 +399,42 @@ const HomeControl = () => {
           </button>
         </div>
       </div>
+
+      {/* ── GRANULAR PERMISSION STATUS ALERT BANNER (IF ANY BUTTON PERMISSION IS DENIED) ── */}
+      {!isAdmin && (!canEdit || !canDeploy || !canDelete) && (
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
+          <ShieldAlert size={18} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs space-y-1">
+            <p className="font-bold text-amber-900">Restricted Action Permissions Applied</p>
+            <p className="text-amber-700 leading-relaxed">
+              Your account has access to view the Home Screen CMS, but the Administrator has not granted certain button permissions:
+            </p>
+            <div className="flex gap-2 flex-wrap pt-1 font-mono text-[11px]">
+              <span
+                className={`px-2 py-0.5 rounded font-bold ${
+                  canEdit ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                }`}
+              >
+                Edit: {canEdit ? "Granted" : "Denied (Fields Read-Only)"}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded font-bold ${
+                  canDeploy ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                }`}
+              >
+                Deploy/Publish: {canDeploy ? "Granted" : "Denied (Publish Blocked)"}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded font-bold ${
+                  canDelete ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                }`}
+              >
+                Delete: {canDelete ? "Granted" : "Denied (Phrase Delete Blocked)"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── SECTION TABS ── */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-gray-200">
@@ -392,10 +481,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.heroBadge || ""}
                   onChange={(e) => updateField("heroBadge", e.target.value)}
                   placeholder="e.g. Enterprise IT & Digital Solutions Partner"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -406,10 +496,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.heroTitlePrefix || ""}
                   onChange={(e) => updateField("heroTitlePrefix", e.target.value)}
                   placeholder="Transforming Ideas Into"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -421,17 +512,19 @@ const HomeControl = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.heroPrimaryBtnText || ""}
                     onChange={(e) => updateField("heroPrimaryBtnText", e.target.value)}
                     placeholder="Explore Our Services"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.heroPrimaryBtnLink || ""}
                     onChange={(e) => updateField("heroPrimaryBtnLink", e.target.value)}
                     placeholder="/services"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -460,14 +553,21 @@ const HomeControl = () => {
                       </span>
                       <input
                         type="text"
+                        disabled={!canEdit}
                         value={phrase}
                         onChange={(e) => handleHeadlineChange(idx, e.target.value)}
-                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:border-[#FF6900] outline-none"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:border-[#FF6900] outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                       <button
+                        type="button"
                         onClick={() => handleRemoveHeadline(idx)}
-                        className="p-2.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                        title="Delete phrase"
+                        disabled={!canDelete}
+                        title={!canDelete ? "Delete permission not granted" : "Delete phrase"}
+                        className={`p-2.5 rounded-xl transition-colors ${
+                          canDelete
+                            ? "text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer"
+                            : "text-gray-300 opacity-40 cursor-not-allowed"
+                        }`}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -478,15 +578,22 @@ const HomeControl = () => {
                 <div className="flex items-center gap-2 pt-2">
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={newHeadlineInput}
                     onChange={(e) => setNewHeadlineInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddHeadline()}
-                    placeholder="Add a new headline phrase (e.g. Next-Gen Web Architecture)..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm outline-none focus:border-[#0756A5]"
+                    placeholder={
+                      canEdit
+                        ? "Add a new headline phrase (e.g. Next-Gen Web Architecture)..."
+                        : "Edit permission required to add phrases"
+                    }
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm outline-none focus:border-[#0756A5] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                   <button
+                    type="button"
                     onClick={handleAddHeadline}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0756A5] hover:bg-blue-600 text-white text-xs font-bold transition-colors shrink-0"
+                    disabled={!canEdit}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0756A5] hover:bg-blue-600 text-white text-xs font-bold transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Plus size={14} />
                     <span>Add Phrase</span>
@@ -501,10 +608,11 @@ const HomeControl = () => {
                 </label>
                 <textarea
                   rows={3}
+                  disabled={!canEdit}
                   value={homeContent.heroSubtitle || ""}
                   onChange={(e) => updateField("heroSubtitle", e.target.value)}
                   placeholder="Describe Vishwakarma Web Private Limited's mission and engineering core..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] focus:ring-2 focus:ring-[#0756A5]/10 text-sm outline-none transition-all leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -516,17 +624,19 @@ const HomeControl = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.heroSecondaryBtnText || ""}
                     onChange={(e) => updateField("heroSecondaryBtnText", e.target.value)}
                     placeholder="Apply For Project"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.heroSecondaryBtnLink || ""}
                     onChange={(e) => updateField("heroSecondaryBtnLink", e.target.value)}
                     placeholder="/quote"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -555,10 +665,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.strategicAdvantageTag || ""}
                   onChange={(e) => updateField("strategicAdvantageTag", e.target.value)}
                   placeholder="Our Strategic Advantage"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -568,10 +679,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.strategicAdvantageTitle || ""}
                   onChange={(e) => updateField("strategicAdvantageTitle", e.target.value)}
                   placeholder="Why Forward-Thinking Businesses Choose Vishwakarma Web"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -581,10 +693,11 @@ const HomeControl = () => {
                 </label>
                 <textarea
                   rows={2}
+                  disabled={!canEdit}
                   value={homeContent.strategicAdvantageSubtitle || ""}
                   onChange={(e) => updateField("strategicAdvantageSubtitle", e.target.value)}
                   placeholder="We eliminate technical friction and build high-performance software engineered for lasting commercial resilience."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -617,9 +730,10 @@ const HomeControl = () => {
                       </label>
                       <input
                         type="text"
+                        disabled={!canEdit}
                         value={pillar.title || ""}
                         onChange={(e) => handlePillarChange(idx, "title", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-[#082B59] outline-none focus:border-[#0756A5]"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-[#082B59] outline-none focus:border-[#0756A5] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                     </div>
 
@@ -629,9 +743,10 @@ const HomeControl = () => {
                       </label>
                       <textarea
                         rows={2}
+                        disabled={!canEdit}
                         value={pillar.desc || ""}
                         onChange={(e) => handlePillarChange(idx, "desc", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs text-gray-700 outline-none focus:border-[#0756A5] leading-relaxed"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs text-gray-700 outline-none focus:border-[#0756A5] leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                     </div>
 
@@ -641,9 +756,10 @@ const HomeControl = () => {
                       </label>
                       <input
                         type="text"
+                        disabled={!canEdit}
                         value={pillar.feature || ""}
                         onChange={(e) => handlePillarChange(idx, "feature", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs text-gray-600 outline-none focus:border-[#0756A5]"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs text-gray-600 outline-none focus:border-[#0756A5] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>
@@ -664,10 +780,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.strategicBannerTitle || ""}
                   onChange={(e) => updateField("strategicBannerTitle", e.target.value)}
                   placeholder="Business-Oriented Approach: Technology Engineered for Measurable Commercial ROI"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -677,10 +794,11 @@ const HomeControl = () => {
                 </label>
                 <textarea
                   rows={3}
+                  disabled={!canEdit}
                   value={homeContent.strategicBannerDesc || ""}
                   onChange={(e) => updateField("strategicBannerDesc", e.target.value)}
                   placeholder="Explain your milestone escrow, sprint velocity, and code ownership delivery terms..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -707,10 +825,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaGuaranteeTitle || ""}
                   onChange={(e) => updateField("slaGuaranteeTitle", e.target.value)}
                   placeholder="Enterprise SLA & Engineering Assurance"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -720,10 +839,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaGuaranteeSubtitle || ""}
                   onChange={(e) => updateField("slaGuaranteeSubtitle", e.target.value)}
                   placeholder="Our client contracts are backed by concrete engineering SLAs..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -737,10 +857,11 @@ const HomeControl = () => {
                 </div>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaUptime || ""}
                   onChange={(e) => updateField("slaUptime", e.target.value)}
                   placeholder="99.98%"
-                  className="w-full px-3 py-2 rounded-xl border border-emerald-200 bg-white font-extrabold text-emerald-900 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-emerald-200 bg-white font-extrabold text-emerald-900 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
                 <p className="text-[11px] text-gray-500">Mission-critical cloud infrastructure availability guarantee.</p>
               </div>
@@ -753,10 +874,11 @@ const HomeControl = () => {
                 </div>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaTurnaround || ""}
                   onChange={(e) => updateField("slaTurnaround", e.target.value)}
                   placeholder="24-Hour"
-                  className="w-full px-3 py-2 rounded-xl border border-amber-200 bg-white font-extrabold text-amber-900 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-amber-200 bg-white font-extrabold text-amber-900 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
                 <p className="text-[11px] text-gray-500">Rapid response and agile 2-week milestone shipping cycles.</p>
               </div>
@@ -769,10 +891,11 @@ const HomeControl = () => {
                 </div>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaSecurity || ""}
                   onChange={(e) => updateField("slaSecurity", e.target.value)}
                   placeholder="Zero-Trust"
-                  className="w-full px-3 py-2 rounded-xl border border-blue-200 bg-white font-extrabold text-blue-900 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-blue-200 bg-white font-extrabold text-blue-900 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
                 <p className="text-[11px] text-gray-500">Bank-grade encryption, RBAC, and automated OWASP audits.</p>
               </div>
@@ -785,10 +908,11 @@ const HomeControl = () => {
                 </div>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.slaEscrow || ""}
                   onChange={(e) => updateField("slaEscrow", e.target.value)}
                   placeholder="Milestone-Escrow"
-                  className="w-full px-3 py-2 rounded-xl border border-orange-200 bg-white font-extrabold text-orange-900 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-orange-200 bg-white font-extrabold text-orange-900 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
                 <p className="text-[11px] text-gray-500">Pay only after reviewing staging code and sprint approvals.</p>
               </div>
@@ -816,10 +940,11 @@ const HomeControl = () => {
                 </label>
                 <input
                   type="text"
+                  disabled={!canEdit}
                   value={homeContent.ctaHeadline || ""}
                   onChange={(e) => updateField("ctaHeadline", e.target.value)}
                   placeholder="Have an Idea? Let's Build Something Powerful."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -829,10 +954,11 @@ const HomeControl = () => {
                 </label>
                 <textarea
                   rows={3}
+                  disabled={!canEdit}
                   value={homeContent.ctaSubtitle || ""}
                   onChange={(e) => updateField("ctaSubtitle", e.target.value)}
                   placeholder="Partner with Vishwakarma Web Private Limited to architect custom software..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -844,17 +970,19 @@ const HomeControl = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.ctaPrimaryBtnText || ""}
                     onChange={(e) => updateField("ctaPrimaryBtnText", e.target.value)}
                     placeholder="Apply For Project"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.ctaPrimaryBtnLink || ""}
                     onChange={(e) => updateField("ctaPrimaryBtnLink", e.target.value)}
                     placeholder="/quote"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -867,17 +995,19 @@ const HomeControl = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.ctaSecondaryBtnText || ""}
                     onChange={(e) => updateField("ctaSecondaryBtnText", e.target.value)}
                     placeholder="Chat on WhatsApp"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                   <input
                     type="text"
+                    disabled={!canEdit}
                     value={homeContent.ctaWhatsappNumber || ""}
                     onChange={(e) => updateField("ctaWhatsappNumber", e.target.value)}
                     placeholder="+91 70775 60648"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0756A5] text-sm outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -895,13 +1025,29 @@ const HomeControl = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={handleSave}
-              disabled={saving || loading}
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] hover:from-[#082B59] hover:to-[#0756A5] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
+              disabled={saving || loading || !canDeploy || !canEdit}
+              title={
+                !canEdit
+                  ? "Edit permission required to save"
+                  : !canDeploy
+                  ? "Deploy permission not granted by Admin"
+                  : "Save & publish changes live"
+              }
+              className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${
+                !canDeploy || !canEdit
+                  ? "bg-gray-400 cursor-not-allowed opacity-60"
+                  : "bg-gradient-to-r from-[#0756A5] to-[#082B59] hover:from-[#082B59] hover:to-[#0756A5]"
+              }`}
             >
               {saving ? (
                 <>
                   <RefreshCw size={14} className="animate-spin" />
                   <span>Saving Configuration...</span>
+                </>
+              ) : !canDeploy ? (
+                <>
+                  <Lock size={14} />
+                  <span>Deploy Restricted</span>
                 </>
               ) : (
                 <>
