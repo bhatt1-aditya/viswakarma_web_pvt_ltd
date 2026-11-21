@@ -13,6 +13,7 @@ import {
   PhoneCall,
   LayoutTemplate,
   Compass,
+  Layers,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -184,7 +185,9 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                       </Link>
                     )}
 
-                    {(isAdmin || permissions?.sidebar?.homeControl === true) && (
+                    {(isAdmin ||
+                      (permissions?.sidebar?.websiteControl &&
+                        permissions?.sidebar?.homeControl === true)) && (
                       <Link
                         to="/home-control"
                         onClick={() => setIsDropdownOpen(false)}
@@ -195,7 +198,9 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                       </Link>
                     )}
 
-                    {(isAdmin || permissions?.sidebar?.aboutControl === true) && (
+                    {(isAdmin ||
+                      (permissions?.sidebar?.websiteControl &&
+                        permissions?.sidebar?.aboutControl === true)) && (
                       <Link
                         to="/about-control"
                         onClick={() => setIsDropdownOpen(false)}
@@ -203,6 +208,19 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                       >
                         <Compass size={14} className="text-[#0756A5]" />
                         <span>About Us CMS</span>
+                      </Link>
+                    )}
+
+                    {(isAdmin ||
+                      (permissions?.sidebar?.websiteControl &&
+                        permissions?.sidebar?.servicesControl === true)) && (
+                      <Link
+                        to="/services-control"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
+                      >
+                        <Layers size={14} className="text-[#0756A5]" />
+                        <span>Services CMS</span>
                       </Link>
                     )}
 

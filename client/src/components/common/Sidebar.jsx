@@ -7,6 +7,7 @@ import {
   PhoneCall,
   LayoutTemplate,
   Compass,
+  Layers,
   Globe,
   ChevronDown,
   ChevronLeft,
@@ -43,20 +44,15 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       ? "Admin"
       : "Telecaller Staff");
 
-  // Dynamic permission checks for CMS Controls
-  const canAccessHomeControl = isAdmin || permissions?.sidebar?.homeControl === true;
-  const canAccessAboutControl = isAdmin || permissions?.sidebar?.aboutControl === true;
-  const canAccessWebsiteControls = canAccessHomeControl || canAccessAboutControl;
+  // Dynamic permission checks for Website Controls
+  const hasWebsiteMaster = isAdmin || permissions?.sidebar?.websiteControl === true;
 
-  const isWebsiteRoute =
-    location.pathname === "/home-control" || location.pathname === "/about-control";
-  const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(isWebsiteRoute);
-
-  useEffect(() => {
-    if (isWebsiteRoute) {
-      setWebsiteDropdownOpen(true);
-    }
-  }, [location.pathname, isWebsiteRoute]);
+  const canAccessHomeControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.homeControl === true);
+  const canAccessAboutControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.aboutControl === true);
+  const canAccessServicesControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.servicesControl === true);
 
   // Dynamic permission-based tab filtering: core standalone tabs
   const menuItems = [
@@ -83,7 +79,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     },
   ].filter((item) => item.allowed);
 
-  // Sub-items for Website Controls dropdown
+  // Sub-items for Website Controls dropdown - ONLY show sub-tabs that have permission!
   const websiteSubItems = [
     {
       label: "Home Screen",
@@ -99,7 +95,31 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Compass,
       allowed: canAccessAboutControl,
     },
+    {
+      label: "Services CMS",
+      path: "/services-control",
+      badge: "CMS",
+      icon: Layers,
+      allowed: canAccessServicesControl,
+    },
   ].filter((item) => item.allowed);
+
+  // Parent Website Controls tab only shows if user is Admin OR has master websiteControl AND at least one sub-tab checked
+  const canAccessWebsiteControls =
+    (isAdmin || hasWebsiteMaster) && websiteSubItems.length > 0;
+
+  const isWebsiteRoute =
+    location.pathname === "/home-control" ||
+    location.pathname === "/about-control" ||
+    location.pathname === "/services-control" ||
+    location.pathname === "/services-admin";
+  const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(isWebsiteRoute);
+
+  useEffect(() => {
+    if (isWebsiteRoute) {
+      setWebsiteDropdownOpen(true);
+    }
+  }, [location.pathname, isWebsiteRoute]);
 
   return (
     <>

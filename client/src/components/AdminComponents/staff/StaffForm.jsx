@@ -9,33 +9,14 @@ import {
   Users,
   LayoutDashboard,
   Compass,
+  Layers,
+  Globe,
+  ChevronDown,
 } from "lucide-react";
 import API_BASE_URL from "../../../utils/apiConfig";
 import { INDIAN_STATES } from "../../../utils/indianStates";
 
-const MODULE_DEFINITIONS = [
-  {
-    key: "homeControl",
-    name: "Home Screen CMS",
-    icon: LayoutTemplate,
-    description: "Manage public website copy, hero typewriter, 7 pillars & SLA guarantees",
-    buttons: [
-      { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
-      { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
-      { key: "delete", label: "Delete Elements", hint: "Allow removing phrases & items" },
-    ],
-  },
-  {
-    key: "aboutControl",
-    name: "About Us CMS",
-    icon: Compass,
-    description: "Manage About Us company story, mission, vision, core values & engineering framework",
-    buttons: [
-      { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
-      { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
-      { key: "delete", label: "Delete Elements", hint: "Allow removing phrases & items" },
-    ],
-  },
+const CORE_MODULE_DEFINITIONS = [
   {
     key: "telecaller",
     name: "Telecaller & Leads",
@@ -68,16 +49,58 @@ const MODULE_DEFINITIONS = [
   },
 ];
 
+const WEBSITE_CONTROL_MODULES = [
+  {
+    key: "homeControl",
+    name: "Home Screen CMS",
+    icon: LayoutTemplate,
+    description: "Manage public website copy, hero typewriter, 7 pillars & SLA guarantees",
+    buttons: [
+      { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
+      { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
+      { key: "delete", label: "Delete Elements", hint: "Allow removing phrases & items" },
+    ],
+  },
+  {
+    key: "aboutControl",
+    name: "About Us CMS",
+    icon: Compass,
+    description: "Manage About Us company story, mission, vision, core values & engineering framework",
+    buttons: [
+      { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
+      { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
+      { key: "delete", label: "Delete Elements", hint: "Allow removing phrases & items" },
+    ],
+  },
+  {
+    key: "servicesControl",
+    name: "Services CMS",
+    icon: Layers,
+    description: "Manage 108+ digital services catalog, add new services, update tech stack & delete",
+    buttons: [
+      { key: "add", label: "Add Service", hint: "Allow creating new service entries" },
+      { key: "edit", label: "Edit Service", hint: "Allow modifying service details & tech stacks" },
+      { key: "delete", label: "Delete Service", hint: "Allow deleting service records" },
+    ],
+  },
+];
+
 const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
   const [form, setForm] = useState(() => {
     const sidebar = {
       dashboard: false,
       telecaller: true,
+      websiteControl: false,
       homeControl: false,
       aboutControl: false,
+      servicesControl: false,
       staff: false,
       ...(initial?.permissions?.sidebar || {}),
     };
+
+    if (sidebar.homeControl || sidebar.aboutControl || sidebar.servicesControl) {
+      sidebar.websiteControl = true;
+    }
 
     const buttons = {
       telecaller: {
@@ -101,6 +124,14 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
         delete: false,
         ...(initial?.permissions?.buttons?.aboutControl || {}),
       },
+      servicesControl: {
+        add: false,
+        edit: false,
+        deploy: false,
+        publish: false,
+        delete: false,
+        ...(initial?.permissions?.buttons?.servicesControl || {}),
+      },
       staff: {
         add: false,
         edit: false,
@@ -116,6 +147,9 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
     }
     if (buttons.aboutControl?.publish && !buttons.aboutControl.deploy) {
       buttons.aboutControl.deploy = true;
+    }
+    if (buttons.servicesControl?.publish && !buttons.servicesControl.deploy) {
+      buttons.servicesControl.deploy = true;
     }
 
     return {
@@ -140,17 +174,44 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
     setForm((f) => ({ ...f, [key]: val }));
   }
 
-  function toggleSidebar(key) {
+  function toggleWebsiteControl() {
     setForm((f) => {
-      const isEnabled = !f.permissions.sidebar[key];
+      const current = f.permissions?.sidebar?.websiteControl === true;
+      const next = !current;
       return {
         ...f,
         permissions: {
           ...f.permissions,
           sidebar: {
             ...f.permissions.sidebar,
-            [key]: isEnabled,
+            websiteControl: next,
+            ...(!next
+              ? { homeControl: false, aboutControl: false, servicesControl: false }
+              : {}),
           },
+        },
+      };
+    });
+  }
+
+  function toggleSidebar(key) {
+    setForm((f) => {
+      const isEnabled = !f.permissions.sidebar[key];
+      const updatedSidebar = {
+        ...f.permissions.sidebar,
+        [key]: isEnabled,
+      };
+      if (
+        ["homeControl", "aboutControl", "servicesControl"].includes(key) &&
+        isEnabled
+      ) {
+        updatedSidebar.websiteControl = true;
+      }
+      return {
+        ...f,
+        permissions: {
+          ...f.permissions,
+          sidebar: updatedSidebar,
         },
       };
     });
@@ -164,7 +225,9 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
 
       // Keep deploy and publish synchronized for Home & About Control CMS
       if (
-        (section === "homeControl" || section === "aboutControl") &&
+        (section === "homeControl" ||
+          section === "aboutControl" ||
+          section === "servicesControl") &&
         (action === "deploy" || action === "publish")
       ) {
         updatedSection.deploy = newVal;
@@ -342,8 +405,9 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
           </p>
         </div>
 
-        <div className="space-y-3">
-          {MODULE_DEFINITIONS.map((mod) => {
+        <div className="space-y-4">
+          {/* Core Modules (Telecaller, Staff, Dashboard) */}
+          {CORE_MODULE_DEFINITIONS.map((mod) => {
             const IconComp = mod.icon;
             const hasSidebarAccess = form.permissions?.sidebar?.[mod.key] === true;
             const sectionButtons = form.permissions?.buttons?.[mod.key] || {};
@@ -455,6 +519,180 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
               </div>
             );
           })}
+
+          {/* ── PARENT MASTER WEBSITE CONTROLS CARD ── */}
+          <div
+            className={`p-4 rounded-2xl border transition-all ${
+              form.permissions?.sidebar?.websiteControl === true
+                ? "bg-gradient-to-b from-blue-50/40 via-white to-white border-blue-300 shadow-sm"
+                : "bg-gray-50/70 border-gray-200/80"
+            }`}
+          >
+            {/* Master Header */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                    form.permissions?.sidebar?.websiteControl === true
+                      ? "bg-[#0756A5] text-white shadow-xs"
+                      : "bg-gray-200 text-gray-400"
+                  }`}
+                >
+                  <Globe size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-[#082B59] flex items-center gap-2">
+                    <span>Website Controls (CMS Master Access)</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                        form.permissions?.sidebar?.websiteControl === true
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                    >
+                      {form.permissions?.sidebar?.websiteControl === true
+                        ? "Master Granted"
+                        : "Master Disabled"}
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 leading-tight">
+                    Parent permission for website content management. When enabled, reveals sub-tabs
+                    below (Home, About Us, Services) to grant specific tab & button permissions.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleWebsiteControl}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  form.permissions?.sidebar?.websiteControl === true
+                    ? "bg-[#0756A5] text-white shadow-xs hover:bg-blue-600"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {form.permissions?.sidebar?.websiteControl === true
+                  ? "Disable Website Controls"
+                  : "Enable Website Controls"}
+              </button>
+            </div>
+
+            {/* NESTED SUB-TABS (Only shown if websiteControl master is enabled) */}
+            {form.permissions?.sidebar?.websiteControl === true ? (
+              <div className="mt-4 pt-4 border-t border-blue-100 space-y-3 pl-2 sm:pl-4">
+                <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#0756A5] uppercase tracking-wider">
+                  <ChevronDown size={14} />
+                  <span>Sub-Tabs Under Website Controls (Configure Individual Tabs & Buttons):</span>
+                </div>
+
+                <div className="space-y-3">
+                  {WEBSITE_CONTROL_MODULES.map((subMod) => {
+                    const SubIcon = subMod.icon;
+                    const hasSubAccess = form.permissions?.sidebar?.[subMod.key] === true;
+                    const sectionButtons = form.permissions?.buttons?.[subMod.key] || {};
+
+                    return (
+                      <div
+                        key={subMod.key}
+                        className={`p-3 rounded-xl border transition-all ${
+                          hasSubAccess
+                            ? "bg-white border-blue-200 shadow-2xs"
+                            : "bg-gray-50/80 border-gray-200/70"
+                        }`}
+                      >
+                        {/* Sub-tab Header */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                                hasSubAccess
+                                  ? "bg-blue-100 text-[#0756A5]"
+                                  : "bg-gray-200 text-gray-400"
+                              }`}
+                            >
+                              <SubIcon size={14} />
+                            </div>
+                            <div>
+                              <h5 className="text-xs font-bold text-[#082B59] flex items-center gap-1.5">
+                                <span>{subMod.name}</span>
+                                <span
+                                  className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${
+                                    hasSubAccess
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-gray-200 text-gray-500"
+                                  }`}
+                                >
+                                  {hasSubAccess ? "Active Tab" : "Tab Disabled"}
+                                </span>
+                              </h5>
+                              <p className="text-[10px] text-gray-500 leading-tight">
+                                {subMod.description}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleSidebar(subMod.key)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                              hasSubAccess
+                                ? "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
+                          >
+                            {hasSubAccess ? "Disable Tab" : "Enable Tab"}
+                          </button>
+                        </div>
+
+                        {/* Sub-tab Buttons */}
+                        {subMod.buttons.length > 0 && (
+                          <div className="mt-2.5 pt-2 border-t border-gray-100">
+                            {!hasSubAccess ? (
+                              <div className="text-[10px] text-gray-400 italic flex items-center gap-1">
+                                <Lock size={11} />
+                                <span>Enable {subMod.name} to grant button actions.</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-wrap gap-1.5">
+                                {subMod.buttons.map((btn) => {
+                                  const isAllowed = sectionButtons[btn.key] === true;
+                                  return (
+                                    <button
+                                      type="button"
+                                      key={btn.key}
+                                      onClick={() => toggleButton(subMod.key, btn.key)}
+                                      title={btn.hint}
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition-all ${
+                                        isAllowed
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                          : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
+                                      }`}
+                                    >
+                                      {isAllowed ? (
+                                        <Check size={11} className="text-emerald-600 stroke-[3]" />
+                                      ) : (
+                                        <X size={11} className="text-gray-400" />
+                                      )}
+                                      <span>{btn.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2.5 p-2.5 bg-gray-100/60 rounded-xl text-center text-xs text-gray-400 italic flex items-center justify-center gap-1.5">
+                <Lock size={12} />
+                <span>Website Controls are disabled. Enable above to reveal sub-tabs (Home, About Us, Services).</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
