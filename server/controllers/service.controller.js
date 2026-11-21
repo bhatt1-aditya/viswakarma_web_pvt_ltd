@@ -79,9 +79,29 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
+const isUserAdmin = (user) => {
+  if (!user) return false;
+  const roleName = (
+    user.role?.name ||
+    (typeof user.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  return ["admin", "superadmin"].includes(roleName);
+};
+
 // ADMIN: CREATE SERVICE
 export const createService = async (req, res) => {
   try {
+    const isAdmin = isUserAdmin(req.user);
+    const canAdd = req.user?.permissions?.buttons?.servicesControl?.add === true;
+    if (!isAdmin && !canAdd) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to create services",
+      });
+    }
+
     const totalCount = await Service.countDocuments();
     const serviceData = {
       ...req.body,
@@ -105,6 +125,15 @@ export const createService = async (req, res) => {
 // ADMIN: UPDATE SERVICE
 export const updateService = async (req, res) => {
   try {
+    const isAdmin = isUserAdmin(req.user);
+    const canEdit = req.user?.permissions?.buttons?.servicesControl?.edit === true;
+    if (!isAdmin && !canEdit) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to edit services",
+      });
+    }
+
     const { id } = req.params;
     const service = await Service.findByIdAndUpdate(id, req.body, { new: true });
     if (!service) {
@@ -119,6 +148,15 @@ export const updateService = async (req, res) => {
 // ADMIN: DELETE SERVICE
 export const deleteService = async (req, res) => {
   try {
+    const isAdmin = isUserAdmin(req.user);
+    const canDelete = req.user?.permissions?.buttons?.servicesControl?.delete === true;
+    if (!isAdmin && !canDelete) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to delete services",
+      });
+    }
+
     const { id } = req.params;
     await Service.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Service deleted successfully" });

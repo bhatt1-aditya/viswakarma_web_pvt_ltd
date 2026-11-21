@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -11,6 +11,7 @@ import {
   Calendar,
   ShieldCheck,
 } from "lucide-react";
+import API_BASE_URL from "../../utils/apiConfig";
 import allServicesData from "../../data/all108Services.json";
 import demosData from "../../data/demosData.json";
 
@@ -18,12 +19,43 @@ const ServiceDetail = () => {
   const { categorySlug, serviceSlug } = useParams();
   const [openFaq, setOpenFaq] = useState(0);
 
-  // Find service by serviceSlug or matching slug
-  const service = useMemo(() => {
-    return allServicesData.find(
-      (s) => s.slug === serviceSlug || s.slug === categorySlug
+  const targetSlug = serviceSlug || categorySlug;
+
+  const initialService = useMemo(() => {
+    return (
+      allServicesData.find(
+        (s) => s.slug === targetSlug || s.slug === serviceSlug || s.slug === categorySlug
+      ) || null
     );
-  }, [categorySlug, serviceSlug]);
+  }, [targetSlug, categorySlug, serviceSlug]);
+
+  const [service, setService] = useState(initialService);
+  const [apiRelatedServices, setApiRelatedServices] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (initialService) {
+      setService(initialService);
+    }
+
+    if (targetSlug) {
+      fetch(`${API_BASE_URL}/services/${targetSlug}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (isMounted && data.success && data.service) {
+            setService(data.service);
+            if (Array.isArray(data.relatedServices) && data.relatedServices.length > 0) {
+              setApiRelatedServices(data.relatedServices);
+            }
+          }
+        })
+        .catch((err) => console.warn("Using local service fallback:", err));
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [targetSlug, initialService]);
 
   // Find mapped demo
   const mappedDemo = useMemo(() => {
@@ -33,11 +65,12 @@ const ServiceDetail = () => {
 
   // Find 3 related services in the same category
   const relatedServices = useMemo(() => {
+    if (apiRelatedServices.length > 0) return apiRelatedServices;
     if (!service) return [];
     return allServicesData
       .filter((s) => s.categorySlug === service.categorySlug && s.idNumber !== service.idNumber)
       .slice(0, 3);
-  }, [service]);
+  }, [service, apiRelatedServices]);
 
   if (!service) {
     return (

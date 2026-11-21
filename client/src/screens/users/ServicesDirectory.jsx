@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Palette,
 } from "lucide-react";
+import API_BASE_URL from "../../utils/apiConfig";
 import allServicesData from "../../data/all108Services.json";
 import categoriesData from "../../data/categoriesData.json";
 
@@ -36,6 +37,43 @@ const ServicesDirectory = () => {
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
+  const [servicesList, setServicesList] = useState(allServicesData);
+  const [categoriesList, setCategoriesList] = useState(categoriesData);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${API_BASE_URL}/services/all?limit=200`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (
+          isMounted &&
+          data.success &&
+          Array.isArray(data.services) &&
+          data.services.length > 0
+        ) {
+          setServicesList(data.services);
+        }
+      })
+      .catch((err) => console.warn("Using local services cache:", err));
+
+    fetch(`${API_BASE_URL}/services/categories`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (
+          isMounted &&
+          data.success &&
+          Array.isArray(data.categories) &&
+          data.categories.length > 0
+        ) {
+          setCategoriesList(data.categories);
+        }
+      })
+      .catch((err) => console.warn("Using local categories cache:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleCategoryChange = (slug) => {
     setSelectedCategory(slug);
@@ -48,7 +86,7 @@ const ServicesDirectory = () => {
   };
 
   const filteredServices = useMemo(() => {
-    return allServicesData.filter((service) => {
+    return servicesList.filter((service) => {
       const matchesCategory =
         selectedCategory === "all" || service.categorySlug === selectedCategory;
 
@@ -62,7 +100,7 @@ const ServicesDirectory = () => {
 
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [servicesList, selectedCategory, searchQuery]);
 
   return (
     <div className="bg-[#F5F8FC] min-h-screen py-12 md:py-16">
@@ -115,22 +153,23 @@ const ServicesDirectory = () => {
                 Filter by Category
               </span>
               <span className="text-xs font-semibold text-[#0756A5]">
-                Showing {filteredServices.length} of 108 Services
+                Showing {filteredServices.length} of {servicesList.length} Services
               </span>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleCategoryChange("all")}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${selectedCategory === "all"
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  selectedCategory === "all"
                     ? "bg-[#082B59] text-white shadow-md"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                }`}
               >
-                All Categories (108)
+                All Categories ({servicesList.length})
               </button>
 
-              {categoriesData.map((cat) => {
+              {categoriesList.map((cat) => {
                 const isSelected = selectedCategory === cat.slug;
                 const CatIcon = iconMap[cat.icon] || Globe;
                 return (

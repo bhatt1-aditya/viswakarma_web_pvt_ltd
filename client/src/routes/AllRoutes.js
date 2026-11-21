@@ -10,6 +10,7 @@ import Staff from "../screens/auth/Staff";
 import Telecaller from "../screens/auth/Telecaller";
 import HomeControl from "../screens/auth/HomeControl";
 import AboutControl from "../screens/auth/AboutControl";
+import ServicesControl from "../screens/auth/ServicesControl";
 import Profile from "../screens/auth/Profile";
 
 // Public User Screens
@@ -55,6 +56,8 @@ export const authRoutes = [
   { path: "/telecaller", component: <Telecaller /> },
   { path: "/home-control", component: <HomeControl /> },
   { path: "/about-control", component: <AboutControl /> },
+  { path: "/services-control", component: <ServicesControl /> },
+  { path: "/services-admin", component: <ServicesControl /> },
   { path: "/staff", component: <Staff /> },
   { path: "/profile", component: <Profile /> },
   // All other admin paths redirect to dashboard

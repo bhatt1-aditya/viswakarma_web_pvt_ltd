@@ -18,7 +18,10 @@ router.get("/:slug", getServiceBySlug);
 
 // Admin protected routes
 router.post("/create", protect, createService);
+router.post("/create-service", protect, createService);
 router.put("/update/:id", protect, updateService);
+router.put("/update-service/:id", protect, updateService);
 router.delete("/delete/:id", protect, deleteService);
+router.delete("/delete-service/:id", protect, deleteService);
 
 export default router;
