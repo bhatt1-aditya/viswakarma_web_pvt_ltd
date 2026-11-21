@@ -16,6 +16,9 @@ import {
   ShieldCheck,
   ExternalLink,
   Sparkles,
+  Building2,
+  FolderGit2,
+  Tag,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -53,6 +56,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     isAdmin || (hasWebsiteMaster && permissions?.sidebar?.aboutControl === true);
   const canAccessServicesControl =
     isAdmin || (hasWebsiteMaster && permissions?.sidebar?.servicesControl === true);
+  const canAccessIndustriesControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.industriesControl === true);
+  const canAccessPortfolioControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.portfolioControl === true);
+  const canAccessPricingControl =
+    isAdmin || (hasWebsiteMaster && permissions?.sidebar?.pricingControl === true);
 
   // Dynamic permission-based tab filtering: core standalone tabs
   const menuItems = [
@@ -102,6 +111,27 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Layers,
       allowed: canAccessServicesControl,
     },
+    {
+      label: "Industries CMS",
+      path: "/industries-control",
+      badge: "CMS",
+      icon: Building2,
+      allowed: canAccessIndustriesControl,
+    },
+    {
+      label: "Portfolio CMS",
+      path: "/portfolio-control",
+      badge: "CMS",
+      icon: FolderGit2,
+      allowed: canAccessPortfolioControl,
+    },
+    {
+      label: "Pricing CMS",
+      path: "/pricing-control",
+      badge: "CMS",
+      icon: Tag,
+      allowed: canAccessPricingControl,
+    },
   ].filter((item) => item.allowed);
 
   // Parent Website Controls tab only shows if user is Admin OR has master websiteControl AND at least one sub-tab checked
@@ -112,7 +142,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     location.pathname === "/home-control" ||
     location.pathname === "/about-control" ||
     location.pathname === "/services-control" ||
-    location.pathname === "/services-admin";
+    location.pathname === "/services-admin" ||
+    location.pathname === "/industries-control" ||
+    location.pathname === "/industries-admin" ||
+    location.pathname === "/portfolio-control" ||
+    location.pathname === "/portfolio-admin" ||
+    location.pathname === "/pricing-control" ||
+    location.pathname === "/pricing-admin";
   const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(isWebsiteRoute);
 
   useEffect(() => {

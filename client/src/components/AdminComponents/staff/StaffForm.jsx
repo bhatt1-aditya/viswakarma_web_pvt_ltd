@@ -12,6 +12,9 @@ import {
   Layers,
   Globe,
   ChevronDown,
+  Building2,
+  FolderGit2,
+  Tag,
 } from "lucide-react";
 import API_BASE_URL from "../../../utils/apiConfig";
 import { INDIAN_STATES } from "../../../utils/indianStates";
@@ -83,6 +86,39 @@ const WEBSITE_CONTROL_MODULES = [
       { key: "delete", label: "Delete Service", hint: "Allow deleting service records" },
     ],
   },
+  {
+    key: "industriesControl",
+    name: "Industries CMS",
+    icon: Building2,
+    description: "Manage 12 industry sectors, architectural pain points, engineered solutions & demo links",
+    buttons: [
+      { key: "add", label: "Add Industry", hint: "Allow adding new industry verticals" },
+      { key: "edit", label: "Edit Industry", hint: "Allow modifying industry solutions & details" },
+      { key: "delete", label: "Delete Industry", hint: "Allow deleting industry records" },
+    ],
+  },
+  {
+    key: "portfolioControl",
+    name: "Portfolio CMS",
+    icon: FolderGit2,
+    description: "Manage case studies, client ROI, deliverables, tech stacks & live prototype links",
+    buttons: [
+      { key: "add", label: "Add Case Study", hint: "Allow creating new case study entries" },
+      { key: "edit", label: "Edit Case Study", hint: "Allow modifying case study deliverables & results" },
+      { key: "delete", label: "Delete Case Study", hint: "Allow removing portfolio projects" },
+    ],
+  },
+  {
+    key: "pricingControl",
+    name: "Pricing CMS",
+    icon: Tag,
+    description: "Manage standard engagement tiers, highlight badges, deliverables & billing FAQs",
+    buttons: [
+      { key: "add", label: "Add Tier / FAQ", hint: "Allow adding new pricing packages or FAQs" },
+      { key: "edit", label: "Edit Tier / FAQ", hint: "Allow modifying tier packages & FAQ answers" },
+      { key: "delete", label: "Delete Tier / FAQ", hint: "Allow deleting pricing records" },
+    ],
+  },
 ];
 
 const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
@@ -94,11 +130,21 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
       homeControl: false,
       aboutControl: false,
       servicesControl: false,
+      industriesControl: false,
+      portfolioControl: false,
+      pricingControl: false,
       staff: false,
       ...(initial?.permissions?.sidebar || {}),
     };
 
-    if (sidebar.homeControl || sidebar.aboutControl || sidebar.servicesControl) {
+    if (
+      sidebar.homeControl ||
+      sidebar.aboutControl ||
+      sidebar.servicesControl ||
+      sidebar.industriesControl ||
+      sidebar.portfolioControl ||
+      sidebar.pricingControl
+    ) {
       sidebar.websiteControl = true;
     }
 
@@ -131,6 +177,30 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
         publish: false,
         delete: false,
         ...(initial?.permissions?.buttons?.servicesControl || {}),
+      },
+      industriesControl: {
+        add: false,
+        edit: false,
+        deploy: false,
+        publish: false,
+        delete: false,
+        ...(initial?.permissions?.buttons?.industriesControl || {}),
+      },
+      portfolioControl: {
+        add: false,
+        edit: false,
+        deploy: false,
+        publish: false,
+        delete: false,
+        ...(initial?.permissions?.buttons?.portfolioControl || {}),
+      },
+      pricingControl: {
+        add: false,
+        edit: false,
+        deploy: false,
+        publish: false,
+        delete: false,
+        ...(initial?.permissions?.buttons?.pricingControl || {}),
       },
       staff: {
         add: false,
@@ -186,7 +256,14 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
             ...f.permissions.sidebar,
             websiteControl: next,
             ...(!next
-              ? { homeControl: false, aboutControl: false, servicesControl: false }
+              ? {
+                  homeControl: false,
+                  aboutControl: false,
+                  servicesControl: false,
+                  industriesControl: false,
+                  portfolioControl: false,
+                  pricingControl: false,
+                }
               : {}),
           },
         },
@@ -202,7 +279,14 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
         [key]: isEnabled,
       };
       if (
-        ["homeControl", "aboutControl", "servicesControl"].includes(key) &&
+        [
+          "homeControl",
+          "aboutControl",
+          "servicesControl",
+          "industriesControl",
+          "portfolioControl",
+          "pricingControl",
+        ].includes(key) &&
         isEnabled
       ) {
         updatedSidebar.websiteControl = true;
@@ -223,11 +307,14 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
       const newVal = !sectionButtons[action];
       const updatedSection = { ...sectionButtons, [action]: newVal };
 
-      // Keep deploy and publish synchronized for Home & About Control CMS
+      // Keep deploy and publish synchronized for Home, About, Services, Industries, Portfolio, Pricing
       if (
         (section === "homeControl" ||
           section === "aboutControl" ||
-          section === "servicesControl") &&
+          section === "servicesControl" ||
+          section === "industriesControl" ||
+          section === "portfolioControl" ||
+          section === "pricingControl") &&
         (action === "deploy" || action === "publish")
       ) {
         updatedSection.deploy = newVal;

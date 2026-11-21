@@ -11,6 +11,9 @@ import Telecaller from "../screens/auth/Telecaller";
 import HomeControl from "../screens/auth/HomeControl";
 import AboutControl from "../screens/auth/AboutControl";
 import ServicesControl from "../screens/auth/ServicesControl";
+import IndustriesControl from "../screens/auth/IndustriesControl";
+import PortfolioControl from "../screens/auth/PortfolioControl";
+import PricingControl from "../screens/auth/PricingControl";
 import Profile from "../screens/auth/Profile";
 
 // Public User Screens
@@ -58,10 +61,15 @@ export const authRoutes = [
   { path: "/about-control", component: <AboutControl /> },
   { path: "/services-control", component: <ServicesControl /> },
   { path: "/services-admin", component: <ServicesControl /> },
+  { path: "/industries-control", component: <IndustriesControl /> },
+  { path: "/industries-admin", component: <IndustriesControl /> },
+  { path: "/portfolio-control", component: <PortfolioControl /> },
+  { path: "/portfolio-admin", component: <PortfolioControl /> },
+  { path: "/pricing-control", component: <PricingControl /> },
+  { path: "/pricing-admin", component: <PricingControl /> },
   { path: "/staff", component: <Staff /> },
   { path: "/profile", component: <Profile /> },
   // All other admin paths redirect to dashboard
-  { path: "/services-admin", component: <Navigate to="/dashboard" replace /> },
   { path: "/lead", component: <Navigate to="/dashboard" replace /> },
   { path: "/projects", component: <Navigate to="/dashboard" replace /> },
 ];
