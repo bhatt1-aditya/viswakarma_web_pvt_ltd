@@ -207,7 +207,7 @@ const AboutControl = () => {
               : DEFAULT_CORE_VALUES,
           engineeringFramework:
             Array.isArray(data.data.engineeringFramework) &&
-            data.data.engineeringFramework.length > 0
+              data.data.engineeringFramework.length > 0
               ? data.data.engineeringFramework
               : DEFAULT_ENGINEERING_FRAMEWORK,
         }));
@@ -371,7 +371,7 @@ const AboutControl = () => {
   // Access control guard
   if (!hasAboutControlAccess) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <div className="mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4">
           <ShieldAlert size={32} />
         </div>
@@ -399,7 +399,7 @@ const AboutControl = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none">
       {/* TOAST NOTIFICATION */}
       <AnimatePresence>
         {toast && (
@@ -407,11 +407,10 @@ const AboutControl = () => {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold backdrop-blur-md border ${
-              toast.type === "err"
-                ? "bg-red-500/95 text-white border-red-600"
-                : "bg-[#082B59]/95 text-white border-blue-400/30"
-            }`}
+            className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold backdrop-blur-md border ${toast.type === "err"
+              ? "bg-red-500/95 text-white border-red-600"
+              : "bg-[#082B59]/95 text-white border-blue-400/30"
+              }`}
           >
             {toast.type === "err" ? <AlertCircle size={16} /> : <CheckCircle2 size={16} className="text-emerald-400" />}
             <span>{toast.message}</span>
@@ -463,17 +462,16 @@ const AboutControl = () => {
           <button
             onClick={handleSave}
             disabled={saving || !canDeploy || !canEdit}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-              saving || !canDeploy || !canEdit
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${saving || !canDeploy || !canEdit
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+              : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
+              }`}
             title={
               !canDeploy
                 ? "Deploy Restricted: You do not have permission to publish changes live"
                 : !canEdit
-                ? "Edit Restricted: You do not have permission to edit content"
-                : "Publish changes directly to live website"
+                  ? "Edit Restricted: You do not have permission to edit content"
+                  : "Publish changes directly to live website"
             }
           >
             {!canDeploy ? <Lock size={14} /> : <Save size={14} />}
@@ -506,11 +504,10 @@ const AboutControl = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                isActive
-                  ? "bg-[#0756A5] text-white shadow-xs"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${isActive
+                ? "bg-[#0756A5] text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                }`}
             >
               <Icon size={14} className={isActive ? "text-white" : "text-gray-400"} />
               <span>{tab.label}</span>
@@ -693,11 +690,10 @@ const AboutControl = () => {
                   <button
                     onClick={() => handleRemoveHeadline(idx)}
                     disabled={!canDelete}
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      canDelete
-                        ? "text-gray-400 hover:text-red-600 hover:bg-red-50"
-                        : "text-gray-300 cursor-not-allowed"
-                    }`}
+                    className={`p-1.5 rounded-lg transition-colors ${canDelete
+                      ? "text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      : "text-gray-300 cursor-not-allowed"
+                      }`}
                     title={
                       canDelete
                         ? "Remove phrase"

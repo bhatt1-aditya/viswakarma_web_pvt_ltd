@@ -384,7 +384,7 @@ const PricingControl = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -429,11 +429,10 @@ const PricingControl = () => {
             <button
               onClick={handleOpenCreateTier}
               disabled={!canAdd}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-                !canAdd
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
                   : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
-              }`}
+                }`}
             >
               {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
               <span>Add Pricing Tier</span>
@@ -442,11 +441,10 @@ const PricingControl = () => {
             <button
               onClick={handleOpenCreateFaq}
               disabled={!canAdd}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-                !canAdd
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
                   : "bg-[#0756A5] text-white hover:bg-blue-700 hover:scale-[1.02]"
-              }`}
+                }`}
             >
               {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
               <span>Add New FAQ</span>
@@ -474,11 +472,10 @@ const PricingControl = () => {
       <div className="flex items-center gap-2 border-b border-gray-200 pb-1">
         <button
           onClick={() => setActiveTab("tiers")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 ${
-            activeTab === "tiers"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 ${activeTab === "tiers"
               ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
               : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+            }`}
         >
           <Tag size={15} />
           <span>Pricing Packages</span>
@@ -489,11 +486,10 @@ const PricingControl = () => {
 
         <button
           onClick={() => setActiveTab("faqs")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 ${
-            activeTab === "faqs"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 ${activeTab === "faqs"
               ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
               : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+            }`}
         >
           <HelpCircle size={15} />
           <span>Pricing & Billing FAQs</span>
@@ -531,11 +527,10 @@ const PricingControl = () => {
               {tiers.map((tier, idx) => (
                 <div
                   key={tier._id || idx}
-                  className={`rounded-2xl p-6 flex flex-col justify-between space-y-5 transition-all shadow-xs hover:shadow-md relative group ${
-                    tier.highlight
+                  className={`rounded-2xl p-6 flex flex-col justify-between space-y-5 transition-all shadow-xs hover:shadow-md relative group ${tier.highlight
                       ? "bg-gradient-to-b from-blue-50/50 via-white to-white border-2 border-[#0756A5]"
                       : "bg-white border border-gray-200 hover:border-blue-300"
-                  }`}
+                    }`}
                 >
                   {/* Highlight Ribbon */}
                   {tier.highlight && (
@@ -600,11 +595,10 @@ const PricingControl = () => {
                     <button
                       onClick={() => handleOpenEditTier(tier)}
                       disabled={!canEdit}
-                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
-                        canEdit
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 ${canEdit
                           ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
                           : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                      }`}
+                        }`}
                     >
                       {!canEdit ? <Lock size={12} /> : <Edit size={13} />}
                       <span>Edit Tier</span>
@@ -613,11 +607,10 @@ const PricingControl = () => {
                     <button
                       onClick={() => handleDeleteTier(tier)}
                       disabled={!canDelete || deleteLoading === tier._id}
-                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                        canDelete
+                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
                           ? "text-red-500 hover:bg-red-50 hover:text-red-700"
                           : "text-gray-300 cursor-not-allowed"
-                      }`}
+                        }`}
                     >
                       {deleteLoading === tier._id ? (
                         <RefreshCw size={13} className="animate-spin text-red-500" />
@@ -673,11 +666,10 @@ const PricingControl = () => {
                     <button
                       onClick={() => handleOpenEditFaq(faq)}
                       disabled={!canEdit}
-                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                        canEdit
+                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${canEdit
                           ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
                           : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                      }`}
+                        }`}
                       title="Edit FAQ"
                     >
                       <Edit size={14} />
@@ -686,11 +678,10 @@ const PricingControl = () => {
                     <button
                       onClick={() => handleDeleteFaq(faq)}
                       disabled={!canDelete || deleteLoading === faq._id}
-                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                        canDelete
+                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
                           ? "text-red-500 hover:bg-red-50"
                           : "text-gray-300 cursor-not-allowed"
-                      }`}
+                        }`}
                       title="Delete FAQ"
                     >
                       {deleteLoading === faq._id ? (

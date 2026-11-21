@@ -319,10 +319,10 @@ const PortfolioControl = () => {
   // Access Control Guard
   if (!hasPortfolioAccess) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4">
+      <div className="mx-auto px-4 py-16 text-center">
+        < div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4" >
           <ShieldAlert size={32} />
-        </div>
+        </div >
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
         <p className="text-gray-500 mb-6 max-w-md mx-auto text-sm">
           You do not have permission to access the Portfolio CMS. Please contact your administrator to
@@ -334,12 +334,12 @@ const PortfolioControl = () => {
         >
           Return to Dashboard
         </button>
-      </div>
+      </div >
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -383,11 +383,10 @@ const PortfolioControl = () => {
           <button
             onClick={handleOpenCreate}
             disabled={!canAdd}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-              !canAdd
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+              : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
+              }`}
           >
             {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
             <span>Add Case Study</span>
@@ -450,11 +449,10 @@ const PortfolioControl = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#0756A5] text-white font-bold shadow-xs"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${isSelected
+                    ? "bg-[#0756A5] text-white font-bold shadow-xs"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                 >
                   {cat}
                 </button>
@@ -569,11 +567,10 @@ const PortfolioControl = () => {
                 <button
                   onClick={() => handleOpenEdit(p)}
                   disabled={!canEdit}
-                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
-                    canEdit
-                      ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                      : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                  }`}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${canEdit
+                    ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                    : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                    }`}
                 >
                   {!canEdit ? <Lock size={12} /> : <Edit size={13} />}
                   <span>Edit</span>
@@ -582,11 +579,10 @@ const PortfolioControl = () => {
                 <button
                   onClick={() => handleDelete(p)}
                   disabled={!canDelete || deleteLoading === p._id}
-                  className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                    canDelete
-                      ? "text-red-500 hover:bg-red-50 hover:text-red-700"
-                      : "text-gray-300 cursor-not-allowed"
-                  }`}
+                  className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
+                    ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                    : "text-gray-300 cursor-not-allowed"
+                    }`}
                 >
                   {deleteLoading === p._id ? (
                     <RefreshCw size={13} className="animate-spin text-red-500" />

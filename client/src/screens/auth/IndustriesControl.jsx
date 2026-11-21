@@ -329,7 +329,7 @@ const IndustriesControl = () => {
   // Access Control Guard
   if (!hasIndustriesAccess) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <div className="mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4">
           <ShieldAlert size={32} />
         </div>
@@ -349,7 +349,7 @@ const IndustriesControl = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none space-y-6">
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -364,7 +364,7 @@ const IndustriesControl = () => {
             <Building2 className="text-[#0756A5]" size={28} />
             <span>Industries & Sectors Management</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 ">
             Manage industry architectures, challenges, engineered solutions, demo links, and pain points dynamically.
           </p>
         </div>
@@ -393,11 +393,10 @@ const IndustriesControl = () => {
           <button
             onClick={handleOpenCreate}
             disabled={!canAdd}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-              !canAdd
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+              : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
+              }`}
           >
             {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
             <span>Add Industry</span>
@@ -536,11 +535,10 @@ const IndustriesControl = () => {
                   <button
                     onClick={() => handleOpenEdit(ind)}
                     disabled={!canEdit}
-                    className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
-                      canEdit
-                        ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                        : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                    }`}
+                    className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${canEdit
+                      ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                      : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                      }`}
                   >
                     {!canEdit ? <Lock size={12} /> : <Edit size={13} />}
                     <span>Edit</span>
@@ -549,11 +547,10 @@ const IndustriesControl = () => {
                   <button
                     onClick={() => handleDelete(ind)}
                     disabled={!canDelete || deleteLoading === ind._id}
-                    className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                      canDelete
-                        ? "text-red-500 hover:bg-red-50 hover:text-red-700"
-                        : "text-gray-300 cursor-not-allowed"
-                    }`}
+                    className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
+                      ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                      : "text-gray-300 cursor-not-allowed"
+                      }`}
                   >
                     {deleteLoading === ind._id ? (
                       <RefreshCw size={13} className="animate-spin text-red-500" />
