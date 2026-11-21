@@ -82,7 +82,7 @@ const CompanyNavbar = () => {
               className="flex items-center gap-1.5 hover:text-[#FF6900] transition-colors"
             >
               <Phone size={13} className="text-[#FF6900]" />
-              <span>+91 70775 60648</span>
+              <span>+91  +91 7684931759, 7008156600</span>
             </a>
             <a
               href="mailto:vishwakarmawebprivatelimited@gmail.com"
@@ -373,7 +373,7 @@ const CompanyNavbar = () => {
               </Link>
 
               <div className="pt-2 text-center text-xs text-gray-500">
-                Call Us: <a href="tel:+917008156600" className="font-semibold text-gray-800">+91 70775 60648</a>
+                Call Us: <a href="tel:+917008156600" className="font-semibold text-gray-800">+91  +91 7684931759, 7008156600</a>
               </div>
             </div>
           </div>

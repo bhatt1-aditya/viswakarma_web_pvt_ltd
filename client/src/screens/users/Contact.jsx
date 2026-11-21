@@ -350,7 +350,7 @@ const Contact = () => {
                   <div className="flex items-center gap-3">
                     <Phone size={18} className="text-[#0756A5] shrink-0" />
                     <a href="tel:+917008156600" className="hover:text-white transition-colors font-medium">
-                      +91 70775 60648
+                      +91  +91 7684931759, 7008156600
                     </a>
                   </div>
 
@@ -675,7 +675,7 @@ const Contact = () => {
                     href="tel:+917008156600"
                     className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md"
                   >
-                    Call Technical Support: +91 70775 60648
+                    Call Technical Support: +91  +91 7684931759, 7008156600
                   </a>
                 </div>
               </div>
