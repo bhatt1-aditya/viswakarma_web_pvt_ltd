@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Plus, Layers, MonitorPlay } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../../../utils/apiConfig";
+import CategoryModal from "./CategoryModal";
+import DemoModal from "./DemoModal";
+import demosFallback from "../../../data/demosData.json";
 
-const ServiceUpdateModal = ({ isOpen, onClose, onServiceUpdated, service, categories = [] }) => {
+const ServiceUpdateModal = ({
+  isOpen,
+  onClose,
+  onServiceUpdated,
+  service,
+  categories = [],
+  onRefreshCategories,
+  canAdd = true,
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     categorySlug: "website-design-development",
@@ -15,8 +26,30 @@ const ServiceUpdateModal = ({ isOpen, onClose, onServiceUpdated, service, catego
     techStack: "",
   });
   const [saving, setSaving] = useState(false);
+  const [demos, setDemos] = useState([]);
+
+  // Sub-modals for inline creation
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+  const [createDemoOpen, setCreateDemoOpen] = useState(false);
+
+  // Fetch demos dynamically
+  const fetchDemos = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/demos/all`);
+      if (res.data.success && Array.isArray(res.data.demos) && res.data.demos.length > 0) {
+        setDemos(res.data.demos);
+      } else {
+        setDemos(demosFallback);
+      }
+    } catch {
+      setDemos(demosFallback);
+    }
+  };
 
   useEffect(() => {
+    if (isOpen) {
+      fetchDemos();
+    }
     if (service) {
       setFormData({
         title: service.title || "",
@@ -28,7 +61,7 @@ const ServiceUpdateModal = ({ isOpen, onClose, onServiceUpdated, service, catego
         techStack: Array.isArray(service.techStack) ? service.techStack.join(", ") : "",
       });
     }
-  }, [service]);
+  }, [service, isOpen]);
 
   if (!isOpen || !service) return null;
 
@@ -64,136 +97,187 @@ const ServiceUpdateModal = ({ isOpen, onClose, onServiceUpdated, service, catego
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between border-b pb-4">
-          <h2 className="text-xl font-bold text-[#082B59]">Edit Service #{service.idNumber}</h2>
-          <button onClick={onClose} className="rounded-full p-2 text-gray-400 hover:bg-gray-100">
-            <X size={20} />
-          </button>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fadeIn">
+        <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="flex items-center justify-between border-b pb-4">
+            <h2 className="text-xl font-bold text-[#082B59]">Edit Service #{service.idNumber}</h2>
+            <button onClick={onClose} className="rounded-full p-2 text-gray-400 hover:bg-gray-100">
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase">Service Title *</label>
+              <input
+                type="text"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Category Dropdown with dynamic list and inline + Add */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-700 uppercase flex items-center gap-1">
+                    <Layers size={13} className="text-[#0756A5]" />
+                    <span>Category *</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setCreateCategoryOpen(true)}
+                    className="text-[11px] font-bold text-[#0756A5] hover:text-blue-800 flex items-center gap-0.5 hover:underline"
+                    title="Add new category"
+                  >
+                    <Plus size={12} />
+                    <span>New Category</span>
+                  </button>
+                </div>
+                <select
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                  value={formData.categorySlug}
+                  onChange={(e) => {
+                    const selected = categories.find((c) => c.slug === e.target.value);
+                    setFormData({
+                      ...formData,
+                      categorySlug: e.target.value,
+                      categoryName: selected ? selected.name : e.target.value,
+                    });
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.slug || cat._id} value={cat.slug}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Demo Route Dropdown with dynamic list and inline + Add */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-700 uppercase flex items-center gap-1">
+                    <MonitorPlay size={13} className="text-purple-600" />
+                    <span>Demo Route ID</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setCreateDemoOpen(true)}
+                    className="text-[11px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-0.5 hover:underline"
+                    title="Add new demo route"
+                  >
+                    <Plus size={12} />
+                    <span>New Demo</span>
+                  </button>
+                </div>
+                <select
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                  value={formData.demoSlug}
+                  onChange={(e) => setFormData({ ...formData, demoSlug: e.target.value })}
+                >
+                  {demos.map((demo) => (
+                    <option key={demo.demoId || demo._id} value={demo.demoId}>
+                      {demo.title} ({demo.demoId})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase">Short Description *</label>
+              <textarea
+                required
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                value={formData.shortDescription}
+                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase">Comprehensive Overview *</label>
+              <textarea
+                required
+                rows={4}
+                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                value={formData.overview}
+                onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase">Tech Stack (comma-separated)</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
+                value={formData.techStack}
+                onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 border-t pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-[#FF6900] px-6 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+              >
+                {saving ? "Updating..." : "Update Service"}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase">Service Title *</label>
-            <input
-              type="text"
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase">Category *</label>
-              <select
-                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-                value={formData.categorySlug}
-                onChange={(e) => {
-                  const selected = categories.find((c) => c.slug === e.target.value);
-                  setFormData({
-                    ...formData,
-                    categorySlug: e.target.value,
-                    categoryName: selected ? selected.name : e.target.value,
-                  });
-                }}
-              >
-                <option value="website-design-development">Website Design & Development</option>
-                <option value="content-management-systems">Content Management Systems (CMS)</option>
-                <option value="ecommerce-solutions">E-Commerce Solutions</option>
-                <option value="mobile-app-development">Mobile Application Development</option>
-                <option value="custom-software-enterprise">Custom Software & Enterprise Solutions</option>
-                <option value="ai-machine-learning-automation">AI, Machine Learning & Automation</option>
-                <option value="cloud-devops-infrastructure">Cloud, DevOps & IT Infrastructure</option>
-                <option value="digital-marketing-seo">Digital Marketing & SEO</option>
-                <option value="ui-ux-design-branding">UI/UX Design & Branding</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase">Demo Route ID</label>
-              <select
-                className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-                value={formData.demoSlug}
-                onChange={(e) => setFormData({ ...formData, demoSlug: e.target.value })}
-              >
-                <option value="corporate-website">corporate-website</option>
-                <option value="ecommerce-store">ecommerce-store</option>
-                <option value="multi-vendor-marketplace">multi-vendor-marketplace</option>
-                <option value="crm-software">crm-software</option>
-                <option value="erp-software">erp-software</option>
-                <option value="hrms-software">hrms-software</option>
-                <option value="school-management">school-management</option>
-                <option value="hospital-management">hospital-management</option>
-                <option value="restaurant-management">restaurant-management</option>
-                <option value="real-estate-portal">real-estate-portal</option>
-                <option value="travel-booking">travel-booking</option>
-                <option value="ai-chatbot">ai-chatbot</option>
-                <option value="analytics-dashboard">analytics-dashboard</option>
-                <option value="inventory-management">inventory-management</option>
-                <option value="invoice-billing">invoice-billing</option>
-                <option value="admin-dashboard">admin-dashboard</option>
-                <option value="mobile-app">mobile-app</option>
-                <option value="landing-page">landing-page</option>
-                <option value="cms-blog">cms-blog</option>
-                <option value="automation-workflow">automation-workflow</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase">Short Description *</label>
-            <textarea
-              required
-              rows={2}
-              className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-              value={formData.shortDescription}
-              onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase">Comprehensive Overview *</label>
-            <textarea
-              required
-              rows={4}
-              className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-              value={formData.overview}
-              onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase">Tech Stack (comma-separated)</label>
-            <input
-              type="text"
-              className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#0756A5] focus:outline-none"
-              value={formData.techStack}
-              onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 border-t pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-[#FF6900] px-6 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-            >
-              {saving ? "Updating..." : "Update Service"}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+
+      {/* INLINE NEW CATEGORY MODAL */}
+      {createCategoryOpen && (
+        <CategoryModal
+          isOpen={createCategoryOpen}
+          onClose={() => setCreateCategoryOpen(false)}
+          canAdd={canAdd}
+          onSuccess={(newCat) => {
+            if (onRefreshCategories) onRefreshCategories();
+            if (newCat) {
+              setFormData((prev) => ({
+                ...prev,
+                categorySlug: newCat.slug,
+                categoryName: newCat.name,
+              }));
+            }
+          }}
+        />
+      )}
+
+      {/* INLINE NEW DEMO ROUTE MODAL */}
+      {createDemoOpen && (
+        <DemoModal
+          isOpen={createDemoOpen}
+          onClose={() => setCreateDemoOpen(false)}
+          categories={categories}
+          canAdd={canAdd}
+          onSuccess={(newDemo) => {
+            fetchDemos();
+            if (newDemo) {
+              setFormData((prev) => ({
+                ...prev,
+                demoSlug: newDemo.demoId,
+              }));
+            }
+          }}
+        />
+      )}
+    </>
   );
 };
 

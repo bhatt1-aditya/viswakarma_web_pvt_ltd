@@ -3,6 +3,9 @@ import {
   getAllServices,
   getServiceBySlug,
   getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
   createService,
   updateService,
   deleteService,
@@ -16,7 +19,12 @@ router.get("/categories", getAllCategories);
 router.get("/get-all-services", getAllServices); // backward compatibility
 router.get("/:slug", getServiceBySlug);
 
-// Admin protected routes
+// Category routes
+router.post("/categories/create", protect, createCategory);
+router.put("/categories/update/:id", protect, updateCategory);
+router.delete("/categories/delete/:id", protect, deleteCategory);
+
+// Admin protected service routes
 router.post("/create", protect, createService);
 router.post("/create-service", protect, createService);
 router.put("/update/:id", protect, updateService);
