@@ -97,6 +97,25 @@ const pricingFaqs = [
 ];
 
 const Pricing = () => {
+  const [pricingTiers, setPricingTiers] = useState(tiers);
+  const [pricingFaqList, setPricingFaqList] = useState(pricingFaqs);
+
+  useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/pricing/all`)
+      .then((res) => {
+        if (res.data?.success) {
+          if (Array.isArray(res.data.tiers) && res.data.tiers.length > 0) {
+            setPricingTiers(res.data.tiers);
+          }
+          if (Array.isArray(res.data.faqs) && res.data.faqs.length > 0) {
+            setPricingFaqList(res.data.faqs);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Typewriter effect state
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -409,7 +428,7 @@ const Pricing = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {tiers.map((tier, idx) => (
+            {pricingTiers.map((tier, idx) => (
               <motion.div
                 key={tier.name}
                 initial={{ opacity: 0, y: 25 }}
@@ -708,7 +727,7 @@ const Pricing = () => {
           </div>
 
           <div className="max-w-3xl mx-auto space-y-4">
-            {pricingFaqs.map((faq, idx) => {
+            {pricingFaqList.map((faq, idx) => {
               const isOpen = openFaq === idx;
               return (
                 <div

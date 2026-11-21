@@ -346,7 +346,7 @@ const ServicesControl = () => {
   // Access control guard
   if (!hasServicesControlAccess) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <div className="mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4">
           <ShieldAlert size={32} />
         </div>
@@ -366,7 +366,7 @@ const ServicesControl = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 select-none">
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -454,11 +454,10 @@ const ServicesControl = () => {
                 setCreateServiceOpen(true);
               }}
               disabled={!canAdd}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-                !canAdd
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                  : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+                : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white hover:shadow-glowOrange hover:scale-[1.02]"
+                }`}
             >
               {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
               <span>Add Service</span>
@@ -476,11 +475,10 @@ const ServicesControl = () => {
                 setCategoryModalOpen(true);
               }}
               disabled={!canAdd}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-                !canAdd
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                  : "bg-[#0756A5] text-white hover:bg-blue-700 hover:scale-[1.02]"
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+                : "bg-[#0756A5] text-white hover:bg-blue-700 hover:scale-[1.02]"
+                }`}
             >
               {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
               <span>Add Category</span>
@@ -498,11 +496,10 @@ const ServicesControl = () => {
                 setDemoModalOpen(true);
               }}
               disabled={!canAdd}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${
-                !canAdd
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
-                  : "bg-purple-600 text-white hover:bg-purple-700 hover:scale-[1.02]"
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all ${!canAdd
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"
+                : "bg-purple-600 text-white hover:bg-purple-700 hover:scale-[1.02]"
+                }`}
             >
               {!canAdd ? <Lock size={14} /> : <Plus size={15} />}
               <span>Add Demo Route</span>
@@ -530,11 +527,10 @@ const ServicesControl = () => {
       <div className="flex items-center gap-2 border-b border-gray-200 mb-6 overflow-x-auto pb-1">
         <button
           onClick={() => setActiveTab("services")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-            activeTab === "services"
-              ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === "services"
+            ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
+            : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            }`}
         >
           <Layers size={15} />
           <span>Services Catalog</span>
@@ -545,11 +541,10 @@ const ServicesControl = () => {
 
         <button
           onClick={() => setActiveTab("categories")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-            activeTab === "categories"
-              ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === "categories"
+            ? "border-[#0756A5] text-[#0756A5] bg-blue-50/70"
+            : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            }`}
         >
           <FolderKanban size={15} />
           <span>Service Categories</span>
@@ -560,11 +555,10 @@ const ServicesControl = () => {
 
         <button
           onClick={() => setActiveTab("demos")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-            activeTab === "demos"
-              ? "border-purple-600 text-purple-700 bg-purple-50/70"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === "demos"
+            ? "border-purple-600 text-purple-700 bg-purple-50/70"
+            : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            }`}
         >
           <MonitorPlay size={15} />
           <span>Interactive Demo Routes</span>
@@ -615,11 +609,10 @@ const ServicesControl = () => {
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setSelectedCategory("all")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    selectedCategory === "all"
-                      ? "bg-[#082B59] text-white shadow-xs"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${selectedCategory === "all"
+                    ? "bg-[#082B59] text-white shadow-xs"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                 >
                   All Categories ({services.length})
                 </button>
@@ -630,11 +623,10 @@ const ServicesControl = () => {
                     <button
                       key={cat.slug}
                       onClick={() => setSelectedCategory(cat.slug)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                        isSelected
-                          ? "bg-[#0756A5] text-white font-bold shadow-xs"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${isSelected
+                        ? "bg-[#0756A5] text-white font-bold shadow-xs"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
                     >
                       <span>{cat.name}</span>
                     </button>
@@ -735,11 +727,10 @@ const ServicesControl = () => {
                           setUpdateServiceOpen(true);
                         }}
                         disabled={!canEdit}
-                        className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
-                          canEdit
-                            ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                        }`}
+                        className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${canEdit
+                          ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                          : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                          }`}
                         title={
                           canEdit
                             ? "Edit Service"
@@ -753,11 +744,10 @@ const ServicesControl = () => {
                       <button
                         onClick={() => handleDeleteService(service)}
                         disabled={!canDelete || deleteLoading === service._id}
-                        className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                          canDelete
-                            ? "text-red-500 hover:bg-red-50 hover:text-red-700"
-                            : "text-gray-300 cursor-not-allowed"
-                        }`}
+                        className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
+                          ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                          : "text-gray-300 cursor-not-allowed"
+                          }`}
                         title={
                           canDelete
                             ? "Delete Service"
@@ -807,11 +797,10 @@ const ServicesControl = () => {
                               {showEllipsis && <span className="px-1 text-gray-400">…</span>}
                               <button
                                 onClick={() => setCurrentPage(p)}
-                                className={`w-8 h-8 rounded-xl font-bold transition-all ${
-                                  currentPage === p
-                                    ? "bg-[#0756A5] text-white shadow-xs"
-                                    : "text-gray-600 hover:bg-gray-100"
-                                }`}
+                                className={`w-8 h-8 rounded-xl font-bold transition-all ${currentPage === p
+                                  ? "bg-[#0756A5] text-white shadow-xs"
+                                  : "text-gray-600 hover:bg-gray-100"
+                                  }`}
                               >
                                 {p}
                               </button>
@@ -953,11 +942,10 @@ const ServicesControl = () => {
                           setCategoryModalOpen(true);
                         }}
                         disabled={!canEdit}
-                        className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
-                          canEdit
-                            ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                        }`}
+                        className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${canEdit
+                          ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                          : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                          }`}
                         title="Edit category details"
                       >
                         {!canEdit ? <Lock size={12} /> : <Edit size={13} />}
@@ -967,11 +955,10 @@ const ServicesControl = () => {
                       <button
                         onClick={() => handleDeleteCategory(cat)}
                         disabled={!canDelete || deleteLoading === (cat._id || cat.slug)}
-                        className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                          canDelete
-                            ? "text-red-500 hover:bg-red-50 hover:text-red-700"
-                            : "text-gray-300 cursor-not-allowed"
-                        }`}
+                        className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
+                          ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                          : "text-gray-300 cursor-not-allowed"
+                          }`}
                         title="Delete category"
                       >
                         {deleteLoading === (cat._id || cat.slug) ? (
@@ -1133,11 +1120,10 @@ const ServicesControl = () => {
                         setDemoModalOpen(true);
                       }}
                       disabled={!canEdit}
-                      className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
-                        canEdit
-                          ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                          : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                      }`}
+                      className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${canEdit
+                        ? "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                        : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        }`}
                       title="Edit demo route"
                     >
                       {!canEdit ? <Lock size={12} /> : <Edit size={13} />}
@@ -1147,11 +1133,10 @@ const ServicesControl = () => {
                     <button
                       onClick={() => handleDeleteDemo(demo)}
                       disabled={!canDelete || deleteLoading === (demo._id || demo.demoId)}
-                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${
-                        canDelete
-                          ? "text-red-500 hover:bg-red-50 hover:text-red-700"
-                          : "text-gray-300 cursor-not-allowed"
-                      }`}
+                      className={`p-2 rounded-xl text-xs font-bold transition-colors ${canDelete
+                        ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                        : "text-gray-300 cursor-not-allowed"
+                        }`}
                       title="Delete demo route"
                     >
                       {deleteLoading === (demo._id || demo.demoId) ? (

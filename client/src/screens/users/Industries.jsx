@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
+import API_BASE_URL from "../../utils/apiConfig";
 import {
   Sparkles,
   ArrowRight,
@@ -143,7 +145,38 @@ const industries = [
   },
 ];
 
+const iconMap = {
+  HeartPulse,
+  GraduationCap,
+  ShoppingCart,
+  Building,
+  Compass,
+  ShieldCheck,
+  Truck,
+  Layers,
+  Store,
+  Zap,
+  Briefcase,
+};
+
 const Industries = () => {
+  const [industriesList, setIndustriesList] = useState(industries);
+
+  useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/industries/all`)
+      .then((res) => {
+        if (
+          res.data?.success &&
+          Array.isArray(res.data.industries) &&
+          res.data.industries.length > 0
+        ) {
+          setIndustriesList(res.data.industries);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Typewriter effect state
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -375,8 +408,11 @@ const Industries = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {industries.map((ind, idx) => {
-              const IconComp = ind.icon;
+            {industriesList.map((ind, idx) => {
+              const IconComp =
+                typeof ind.icon === "string"
+                  ? iconMap[ind.icon] || Layers
+                  : ind.icon || Layers;
               return (
                 <motion.div
                   key={idx}

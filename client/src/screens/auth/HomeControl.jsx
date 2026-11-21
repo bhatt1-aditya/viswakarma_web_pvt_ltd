@@ -304,7 +304,7 @@ const HomeControl = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 mx-auto max-w-7xl"
+      className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 mx-auto"
     >
       {/* ── TOAST NOTIFICATION ── */}
       <AnimatePresence>
@@ -313,11 +313,10 @@ const HomeControl = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold border ${
-              toast.type === "ok"
+            className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold border ${toast.type === "ok"
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                 : "bg-red-50 text-red-800 border-red-200"
-            }`}
+              }`}
           >
             {toast.type === "ok" ? (
               <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
@@ -371,14 +370,13 @@ const HomeControl = () => {
               !canEdit
                 ? "Edit permission required to save"
                 : !canDeploy
-                ? "Deploy permission not granted by Admin"
-                : "Save & publish changes live"
+                  ? "Deploy permission not granted by Admin"
+                  : "Save & publish changes live"
             }
-            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${
-              !canDeploy || !canEdit
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${!canDeploy || !canEdit
                 ? "bg-gray-400 cursor-not-allowed opacity-60"
                 : "bg-gradient-to-r from-[#FF6900] to-[#FF8A00] hover:shadow-glowOrange"
-            }`}
+              }`}
           >
             {saving ? (
               <>
@@ -411,23 +409,20 @@ const HomeControl = () => {
             </p>
             <div className="flex gap-2 flex-wrap pt-1 font-mono text-[11px]">
               <span
-                className={`px-2 py-0.5 rounded font-bold ${
-                  canEdit ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
-                }`}
+                className={`px-2 py-0.5 rounded font-bold ${canEdit ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                  }`}
               >
                 Edit: {canEdit ? "Granted" : "Denied (Fields Read-Only)"}
               </span>
               <span
-                className={`px-2 py-0.5 rounded font-bold ${
-                  canDeploy ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
-                }`}
+                className={`px-2 py-0.5 rounded font-bold ${canDeploy ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                  }`}
               >
                 Deploy/Publish: {canDeploy ? "Granted" : "Denied (Publish Blocked)"}
               </span>
               <span
-                className={`px-2 py-0.5 rounded font-bold ${
-                  canDelete ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
-                }`}
+                className={`px-2 py-0.5 rounded font-bold ${canDelete ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                  }`}
               >
                 Delete: {canDelete ? "Granted" : "Denied (Phrase Delete Blocked)"}
               </span>
@@ -445,11 +440,10 @@ const HomeControl = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                isActive
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer ${isActive
                   ? "bg-[#082B59] text-white shadow-md shadow-blue-900/20"
                   : "bg-white text-gray-600 hover:text-[#0756A5] hover:bg-blue-50/50 border border-gray-100"
-              }`}
+                }`}
             >
               <IconComp size={15} className={isActive ? "text-[#FF6900]" : "text-gray-400"} />
               <span>{tab.label}</span>
@@ -563,11 +557,10 @@ const HomeControl = () => {
                         onClick={() => handleRemoveHeadline(idx)}
                         disabled={!canDelete}
                         title={!canDelete ? "Delete permission not granted" : "Delete phrase"}
-                        className={`p-2.5 rounded-xl transition-colors ${
-                          canDelete
+                        className={`p-2.5 rounded-xl transition-colors ${canDelete
                             ? "text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer"
                             : "text-gray-300 opacity-40 cursor-not-allowed"
-                        }`}
+                          }`}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -1030,14 +1023,13 @@ const HomeControl = () => {
                 !canEdit
                   ? "Edit permission required to save"
                   : !canDeploy
-                  ? "Deploy permission not granted by Admin"
-                  : "Save & publish changes live"
+                    ? "Deploy permission not granted by Admin"
+                    : "Save & publish changes live"
               }
-              className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${
-                !canDeploy || !canEdit
+              className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md ${!canDeploy || !canEdit
                   ? "bg-gray-400 cursor-not-allowed opacity-60"
                   : "bg-gradient-to-r from-[#0756A5] to-[#082B59] hover:from-[#082B59] hover:to-[#0756A5]"
-              }`}
+                }`}
             >
               {saving ? (
                 <>
