@@ -8,6 +8,7 @@ import ForgotPassword from "../screens/nonAuth/ForgotPassword";
 import Dashboard from "../screens/auth/Dashboard";
 import Staff from "../screens/auth/Staff";
 import Telecaller from "../screens/auth/Telecaller";
+import HomeControl from "../screens/auth/HomeControl";
 import Profile from "../screens/auth/Profile";
 
 // Public User Screens
@@ -51,6 +52,7 @@ export const authRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
   { path: "/admin", component: <Dashboard /> },
   { path: "/telecaller", component: <Telecaller /> },
+  { path: "/home-control", component: <HomeControl /> },
   { path: "/staff", component: <Staff /> },
   { path: "/profile", component: <Profile /> },
   // All other admin paths redirect to dashboard

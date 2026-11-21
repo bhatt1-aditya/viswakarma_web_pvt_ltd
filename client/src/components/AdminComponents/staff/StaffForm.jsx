@@ -15,6 +15,7 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
       sidebar: {
         dashboard: false,
         telecaller: true,
+        homeControl: false,
         staff: false,
         ...(initial?.permissions?.sidebar || {}),
       },
@@ -24,6 +25,11 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
           updateStatus: true,
           addNote: true,
           ...(initial?.permissions?.buttons?.telecaller || {}),
+        },
+        homeControl: {
+          edit: true,
+          publish: true,
+          ...(initial?.permissions?.buttons?.homeControl || {}),
         },
         staff: {
           add: false,
