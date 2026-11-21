@@ -72,8 +72,105 @@ export const getServiceBySlug = async (req, res) => {
 // GET ALL CATEGORIES
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await ServiceCategory.find({ active: true }).sort({ order: 1 });
-    res.status(200).json({ success: true, categories });
+    let categories = await ServiceCategory.find({ active: true }).sort({ order: 1 });
+    if (!categories || categories.length === 0) {
+      try {
+        const { categoriesData } = await import("../seed/servicesData.js");
+        if (Array.isArray(categoriesData) && categoriesData.length > 0) {
+          await ServiceCategory.insertMany(categoriesData);
+          categories = await ServiceCategory.find({ active: true }).sort({ order: 1 });
+        }
+      } catch (seedErr) {
+        console.warn("Auto-seed categories fallback notice:", seedErr.message);
+      }
+    }
+    res.status(200).json({ success: true, categories: categories || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ADMIN: CREATE CATEGORY
+export const createCategory = async (req, res) => {
+  try {
+    const isAdmin = isUserAdmin(req.user);
+    const canAdd = req.user?.permissions?.buttons?.servicesControl?.add === true;
+    if (!isAdmin && !canAdd) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to create categories",
+      });
+    }
+
+    const { name, slug, description, icon, order } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: "Category name is required" });
+    }
+
+    const generatedSlug = (slug || name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const existing = await ServiceCategory.findOne({ slug: generatedSlug });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Category slug already exists" });
+    }
+
+    const category = await ServiceCategory.create({
+      name,
+      slug: generatedSlug,
+      description: description || `${name} software & engineering services`,
+      icon: icon || "Layers",
+      order: order || 0,
+      active: true,
+    });
+
+    res.status(201).json({ success: true, message: "Category created successfully", category });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ADMIN: UPDATE CATEGORY
+export const updateCategory = async (req, res) => {
+  try {
+    const isAdmin = isUserAdmin(req.user);
+    const canEdit = req.user?.permissions?.buttons?.servicesControl?.edit === true;
+    if (!isAdmin && !canEdit) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to edit categories",
+      });
+    }
+
+    const { id } = req.params;
+    const category = await ServiceCategory.findByIdAndUpdate(id, req.body, { new: true });
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Category updated successfully", category });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ADMIN: DELETE CATEGORY
+export const deleteCategory = async (req, res) => {
+  try {
+    const isAdmin = isUserAdmin(req.user);
+    const canDelete = req.user?.permissions?.buttons?.servicesControl?.delete === true;
+    if (!isAdmin && !canDelete) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You do not have permission to delete categories",
+      });
+    }
+
+    const { id } = req.params;
+    await ServiceCategory.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: "Category deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

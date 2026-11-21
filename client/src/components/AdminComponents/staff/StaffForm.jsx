@@ -401,7 +401,7 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
             <span>Module Access & Granular Button Permissions</span>
           </h3>
           <p className="text-[11px] text-gray-500 mt-0.5">
-            Enable sidebar navigation access, then specify exact buttons (Edit, Deploy, Delete, etc.) permitted for this user.
+            Enable sidebar navigation access (Edit, Deploy, Delete, etc.) permitted for this user.
           </p>
         </div>
 
@@ -415,21 +415,19 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
             return (
               <div
                 key={mod.key}
-                className={`p-3.5 rounded-2xl border transition-all ${
-                  hasSidebarAccess
-                    ? "bg-white border-blue-200 shadow-xs"
-                    : "bg-gray-50/70 border-gray-200/70 opacity-75"
-                }`}
+                className={`p-3.5 rounded-2xl border transition-all ${hasSidebarAccess
+                  ? "bg-white border-blue-200 shadow-xs"
+                  : "bg-gray-50/70 border-gray-200/70 opacity-75"
+                  }`}
               >
                 {/* Module Header / Toggle */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
-                        hasSidebarAccess
-                          ? "bg-blue-50 text-[#0756A5]"
-                          : "bg-gray-200 text-gray-400"
-                      }`}
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${hasSidebarAccess
+                        ? "bg-blue-50 text-[#0756A5]"
+                        : "bg-gray-200 text-gray-400"
+                        }`}
                     >
                       <IconComp size={16} />
                     </div>
@@ -437,29 +435,25 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                       <h4 className="text-xs font-bold text-[#082B59] flex items-center gap-2">
                         <span>{mod.name}</span>
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                            hasSidebarAccess
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-gray-100 text-gray-500 border border-gray-200"
-                          }`}
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${hasSidebarAccess
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-gray-100 text-gray-500 border border-gray-200"
+                            }`}
                         >
                           {hasSidebarAccess ? "Sidebar Granted" : "No Sidebar Access"}
                         </span>
                       </h4>
-                      <p className="text-[11px] text-gray-500 leading-tight">
-                        {mod.description}
-                      </p>
+
                     </div>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => toggleSidebar(mod.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                      hasSidebarAccess
-                        ? "bg-[#0756A5] text-white shadow-xs hover:bg-blue-600"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${hasSidebarAccess
+                      ? "bg-[#0756A5] text-white shadow-xs hover:bg-blue-600"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
                   >
                     {hasSidebarAccess ? "Disable Tab" : "Enable Tab"}
                   </button>
@@ -488,11 +482,10 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                               key={btn.key}
                               onClick={() => toggleButton(mod.key, btn.key)}
                               title={btn.hint}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition-all ${
-                                isAllowed
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 shadow-2xs hover:bg-emerald-100"
-                                  : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200 hover:text-gray-600"
-                              }`}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition-all ${isAllowed
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-300 shadow-2xs hover:bg-emerald-100"
+                                : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200 hover:text-gray-600"
+                                }`}
                             >
                               {isAllowed ? (
                                 <Check size={12} className="text-emerald-600 stroke-[3]" />
@@ -501,11 +494,10 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                               )}
                               <span>{btn.label}</span>
                               <span
-                                className={`text-[9px] px-1 py-0.2 rounded font-mono uppercase ${
-                                  isAllowed
-                                    ? "bg-emerald-200/70 text-emerald-900"
-                                    : "bg-gray-200 text-gray-500"
-                                }`}
+                                className={`text-[9px] px-1 py-0.2 rounded font-mono uppercase ${isAllowed
+                                  ? "bg-emerald-200/70 text-emerald-900"
+                                  : "bg-gray-200 text-gray-500"
+                                  }`}
                               >
                                 {isAllowed ? "Allowed" : "Denied"}
                               </span>
@@ -522,54 +514,46 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
 
           {/* ── PARENT MASTER WEBSITE CONTROLS CARD ── */}
           <div
-            className={`p-4 rounded-2xl border transition-all ${
-              form.permissions?.sidebar?.websiteControl === true
-                ? "bg-gradient-to-b from-blue-50/40 via-white to-white border-blue-300 shadow-sm"
-                : "bg-gray-50/70 border-gray-200/80"
-            }`}
+            className={`p-4 rounded-2xl border transition-all ${form.permissions?.sidebar?.websiteControl === true
+              ? "bg-gradient-to-b from-blue-50/40 via-white to-white border-blue-300 shadow-sm"
+              : "bg-gray-50/70 border-gray-200/80"
+              }`}
           >
             {/* Master Header */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                    form.permissions?.sidebar?.websiteControl === true
-                      ? "bg-[#0756A5] text-white shadow-xs"
-                      : "bg-gray-200 text-gray-400"
-                  }`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${form.permissions?.sidebar?.websiteControl === true
+                    ? "bg-[#0756A5] text-white shadow-xs"
+                    : "bg-gray-200 text-gray-400"
+                    }`}
                 >
                   <Globe size={18} />
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-[#082B59] flex items-center gap-2">
-                    <span>Website Controls (CMS Master Access)</span>
+                    <span>Website Controls</span>
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                        form.permissions?.sidebar?.websiteControl === true
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${form.permissions?.sidebar?.websiteControl === true
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : "bg-gray-200 text-gray-500"
+                        }`}
                     >
                       {form.permissions?.sidebar?.websiteControl === true
                         ? "Master Granted"
                         : "Master Disabled"}
                     </span>
                   </h4>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    Parent permission for website content management. When enabled, reveals sub-tabs
-                    below (Home, About Us, Services) to grant specific tab & button permissions.
-                  </p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={toggleWebsiteControl}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                  form.permissions?.sidebar?.websiteControl === true
-                    ? "bg-[#0756A5] text-white shadow-xs hover:bg-blue-600"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${form.permissions?.sidebar?.websiteControl === true
+                  ? "bg-[#0756A5] text-white shadow-xs hover:bg-blue-600"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
               >
                 {form.permissions?.sidebar?.websiteControl === true
                   ? "Disable Website Controls"
@@ -582,7 +566,7 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
               <div className="mt-4 pt-4 border-t border-blue-100 space-y-3 pl-2 sm:pl-4">
                 <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#0756A5] uppercase tracking-wider">
                   <ChevronDown size={14} />
-                  <span>Sub-Tabs Under Website Controls (Configure Individual Tabs & Buttons):</span>
+                  <span>Sub-Tabs Under Website Controls</span>
                 </div>
 
                 <div className="space-y-3">
@@ -594,21 +578,19 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                     return (
                       <div
                         key={subMod.key}
-                        className={`p-3 rounded-xl border transition-all ${
-                          hasSubAccess
-                            ? "bg-white border-blue-200 shadow-2xs"
-                            : "bg-gray-50/80 border-gray-200/70"
-                        }`}
+                        className={`p-3 rounded-xl border transition-all ${hasSubAccess
+                          ? "bg-white border-blue-200 shadow-2xs"
+                          : "bg-gray-50/80 border-gray-200/70"
+                          }`}
                       >
                         {/* Sub-tab Header */}
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
                             <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                                hasSubAccess
-                                  ? "bg-blue-100 text-[#0756A5]"
-                                  : "bg-gray-200 text-gray-400"
-                              }`}
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center ${hasSubAccess
+                                ? "bg-blue-100 text-[#0756A5]"
+                                : "bg-gray-200 text-gray-400"
+                                }`}
                             >
                               <SubIcon size={14} />
                             </div>
@@ -616,29 +598,25 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                               <h5 className="text-xs font-bold text-[#082B59] flex items-center gap-1.5">
                                 <span>{subMod.name}</span>
                                 <span
-                                  className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${
-                                    hasSubAccess
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : "bg-gray-200 text-gray-500"
-                                  }`}
+                                  className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${hasSubAccess
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : "bg-gray-200 text-gray-500"
+                                    }`}
                                 >
                                   {hasSubAccess ? "Active Tab" : "Tab Disabled"}
                                 </span>
                               </h5>
-                              <p className="text-[10px] text-gray-500 leading-tight">
-                                {subMod.description}
-                              </p>
+
                             </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => toggleSidebar(subMod.key)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                              hasSubAccess
-                                ? "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
-                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                            }`}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${hasSubAccess
+                              ? "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
+                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                              }`}
                           >
                             {hasSubAccess ? "Disable Tab" : "Enable Tab"}
                           </button>
@@ -662,11 +640,10 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
                                       key={btn.key}
                                       onClick={() => toggleButton(subMod.key, btn.key)}
                                       title={btn.hint}
-                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition-all ${
-                                        isAllowed
-                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
-                                          : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
-                                      }`}
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition-all ${isAllowed
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                        : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
+                                        }`}
                                     >
                                       {isAllowed ? (
                                         <Check size={11} className="text-emerald-600 stroke-[3]" />

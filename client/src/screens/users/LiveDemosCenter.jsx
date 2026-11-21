@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles,
@@ -26,6 +26,7 @@ import {
   Workflow,
   CheckCircle2,
 } from "lucide-react";
+import API_BASE_URL from "../../utils/apiConfig";
 import demosData from "../../data/demosData.json";
 
 const demoIcons = {
@@ -54,14 +55,36 @@ const demoIcons = {
 const LiveDemosCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [demosList, setDemosList] = useState(demosData);
 
-  const categories = useMemo(() => {
-    const set = new Set(demosData.map((d) => d.category));
-    return ["all", ...Array.from(set)];
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${API_BASE_URL}/demos/all`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (
+          isMounted &&
+          data.success &&
+          Array.isArray(data.demos) &&
+          data.demos.length > 0
+        ) {
+          setDemosList(data.demos);
+        }
+      })
+      .catch((err) => console.warn("Using local demos fallback:", err));
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
+  const categories = useMemo(() => {
+    const set = new Set(demosList.map((d) => d.category));
+    return ["all", ...Array.from(set)];
+  }, [demosList]);
+
   const filteredDemos = useMemo(() => {
-    return demosData.filter((demo) => {
+    return demosList.filter((demo) => {
       const matchesCategory =
         selectedCategory === "all" || demo.category === selectedCategory;
       const query = searchQuery.toLowerCase().trim();
@@ -70,10 +93,10 @@ const LiveDemosCenter = () => {
         demo.title.toLowerCase().includes(query) ||
         demo.description.toLowerCase().includes(query) ||
         demo.category.toLowerCase().includes(query) ||
-        demo.features.some((f) => f.toLowerCase().includes(query));
+        demo.features?.some((f) => f.toLowerCase().includes(query));
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [demosList, selectedCategory, searchQuery]);
 
   return (
     <div className="bg-[#F5F8FC] min-h-screen py-12 md:py-16">
