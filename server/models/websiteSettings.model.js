@@ -47,6 +47,64 @@ const defaultStrategicPillars = [
   },
 ];
 
+const defaultAboutPhrases = [
+  "Mission-Critical Software.",
+  "Scalable Digital Platforms.",
+  "Enterprise-Grade Applications.",
+  "Intelligent Automated Workflows.",
+  "Future-Ready Cloud Systems.",
+];
+
+const defaultAboutCoreValues = [
+  {
+    number: "01",
+    title: "Engineering Integrity",
+    desc: "We write clean, documented, future-proof code that scales gracefully without hidden shortcuts or technical debt.",
+    feature: "Strict modular architecture adhering to clean code standards.",
+  },
+  {
+    number: "02",
+    title: "Commercial Transparency",
+    desc: "Predictable milestone-driven deliverables, transparent sprint tracking, and clear scope agreements without surprise fees.",
+    feature: "Bi-weekly sprint reviews and verifiable milestone demos.",
+  },
+  {
+    number: "03",
+    title: "Total IP Ownership",
+    desc: "100% of all intellectual property, source repositories, databases, and design tokens belong permanently to the client.",
+    feature: "Complete transfer of repositories, docs, and assets.",
+  },
+  {
+    number: "04",
+    title: "Enduring Technical SLA",
+    desc: "We stand firmly behind our builds with continuous uptime assurance, security patching, and ongoing feature enhancement.",
+    feature: "Proactive uptime monitoring and rapid SLA response.",
+  },
+];
+
+const defaultEngineeringFramework = [
+  {
+    step: "01",
+    title: "Discovery & Enterprise Modeling",
+    desc: "Comprehensive business process mapping, user journey planning, and data domain architecture.",
+  },
+  {
+    step: "02",
+    title: "Decoupled Modular Architecture",
+    desc: "Building scalable frontend micro-interfaces and resilient backend REST APIs designed for scale.",
+  },
+  {
+    step: "03",
+    title: "Automated QA & Security Auditing",
+    desc: "End-to-end regression testing, OWASP vulnerability scans, and Core Web Vitals optimization.",
+  },
+  {
+    step: "04",
+    title: "Cloud Orchestration & 24/7 SLA",
+    desc: "Zero-downtime CI/CD container deployments, cloud monitoring, and dedicated developer retainers.",
+  },
+];
+
 const websiteSettingsSchema = new mongoose.Schema(
   {
     companyName: { type: String, default: "Vishwakarma Web Private Limited" },
@@ -170,6 +228,148 @@ const websiteSettingsSchema = new mongoose.Schema(
       ctaPrimaryBtnLink: { type: String, default: "/quote" },
       ctaSecondaryBtnText: { type: String, default: "Chat on WhatsApp" },
       ctaWhatsappNumber: { type: String, default: "+91 70775 60648" },
+    },
+
+    // ── DYNAMIC ABOUT US SCREEN CMS CONTENT ──
+    aboutContent: {
+      // 1. Hero Section
+      heroBadge: {
+        type: String,
+        default: "About Vishwakarma Web Private Limited",
+      },
+      heroTitlePrefix: {
+        type: String,
+        default: "Architecting & Engineering",
+      },
+      heroHeadlines: {
+        type: [String],
+        default: defaultAboutPhrases,
+      },
+      heroSubtitle: {
+        type: String,
+        default:
+          "Vishwakarma Web Private Limited is a specialized IT engineering and digital product firm based in Noida, India. We empower ambitious startups, growing mid-market companies, and large enterprises with resilient web platforms, mobile ecosystems, custom enterprise software, and automated AI workflows.",
+      },
+      heroPrimaryBtnText: {
+        type: String,
+        default: "Explore 108 Services",
+      },
+      heroPrimaryBtnLink: {
+        type: String,
+        default: "/services",
+      },
+      heroSecondaryBtnText: {
+        type: String,
+        default: "Contact Our Team",
+      },
+      heroSecondaryBtnLink: {
+        type: String,
+        default: "/contact",
+      },
+
+      // 2. Corporate Mission & Vision
+      missionTag: { type: String, default: "MISSION CHARTER" },
+      missionTitle: { type: String, default: "Our Corporate Mission" },
+      missionDesc: {
+        type: String,
+        default:
+          "To empower startups, mid-market businesses, and global enterprises with high-reliability software, web platforms, mobile apps, and autonomous AI systems that streamline operations, eliminate human error, and accelerate commercial growth.",
+      },
+      missionPoints: {
+        type: [String],
+        default: [
+          "Architect decoupled, maintainable code with zero technical debt",
+          "Automate repetitive manual operations with intelligent software",
+          "Deliver transparent bi-weekly milestones with zero scope creep",
+        ],
+      },
+
+      visionTag: { type: String, default: "VISION 2030" },
+      visionTitle: { type: String, default: "Our Long-Term Vision" },
+      visionDesc: {
+        type: String,
+        default:
+          "To be the most trusted technology engineering partner for organizations navigating digital transformation, recognized internationally for exceptional code craftsmanship, robust enterprise security, and measurable commercial return on investment.",
+      },
+      visionPoints: {
+        type: [String],
+        default: [
+          "Global standard for reliable enterprise full-stack engineering",
+          "Pioneering pragmatic AI and autonomous workflow integrations",
+          "Long-term client partnerships grounded in mutual commercial ROI",
+        ],
+      },
+
+      // 3. Core Values
+      coreValuesTag: { type: String, default: "Our Code of Conduct" },
+      coreValuesTitle: { type: String, default: "Our Guiding Principles & Core Values" },
+      coreValuesSubtitle: {
+        type: String,
+        default:
+          "The engineering ethos behind every line of code we write, every architecture we deploy, and every partnership we foster.",
+      },
+      coreValues: {
+        type: [
+          {
+            number: String,
+            title: String,
+            desc: String,
+            feature: String,
+          },
+        ],
+        default: defaultAboutCoreValues,
+      },
+
+      // 4. Engineering Framework
+      frameworkTag: { type: String, default: "Predictable Delivery" },
+      frameworkTitle: { type: String, default: "Our Engineering Architecture Framework" },
+      frameworkSubtitle: {
+        type: String,
+        default:
+          "From business modeling to high-availability cloud orchestration, we apply structured engineering rigor at every stage.",
+      },
+      engineeringFramework: {
+        type: [
+          {
+            step: String,
+            title: String,
+            desc: String,
+          },
+        ],
+        default: defaultEngineeringFramework,
+      },
+
+      // 5. Commercial Commitment Banner
+      guaranteeTag: { type: String, default: "The Vishwakarma Commercial Guarantee" },
+      guaranteeTitle: {
+        type: String,
+        default: "Transparent Partnerships Rooted in Engineering Accountability",
+      },
+      guaranteeDesc: {
+        type: String,
+        default:
+          "When you partner with Vishwakarma Web Private Limited, you retain 100% intellectual property ownership, direct access to dedicated senior developers, and milestone deliverables verified against pre-agreed acceptance criteria.",
+      },
+      slaUptime: { type: String, default: "99.99%" },
+      slaTurnaround: { type: String, default: "2 Weeks" },
+      slaEscrow: { type: String, default: "100% IP" },
+      slaSecurity: { type: String, default: "Zero-Trust" },
+
+      // 6. Final Call to Action
+      ctaTag: { type: String, default: "Ready to Build Something Meaningful?" },
+      ctaHeadline: {
+        type: String,
+        default: "Let's Engineer Your Next Digital Milestone.",
+      },
+      ctaSubtitle: {
+        type: String,
+        default:
+          "Partner with Vishwakarma Web Private Limited to turn business vision into scalable, enterprise-grade software.",
+      },
+      ctaPrimaryBtnText: { type: String, default: "Request a Free Quote" },
+      ctaPrimaryBtnLink: { type: String, default: "/quote" },
+      ctaSecondaryBtnText: { type: String, default: "Schedule Consultation" },
+      ctaSecondaryBtnLink: { type: String, default: "/contact" },
     },
   },
   { timestamps: true }

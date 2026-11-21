@@ -90,6 +90,69 @@ export const updateHomeSettings = async (req, res) => {
   }
 };
 
+// GET DYNAMIC ABOUT US SCREEN CMS SETTINGS (Public)
+export const getAboutSettings = async (req, res) => {
+  try {
+    let settings = await WebsiteSettings.findOne();
+    if (!settings) {
+      settings = await WebsiteSettings.create({});
+    }
+    res.status(200).json({
+      success: true,
+      aboutContent: settings.aboutContent,
+      settings,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// UPDATE DYNAMIC ABOUT US SCREEN CMS SETTINGS (Protected Admin/Staff)
+export const updateAboutSettings = async (req, res) => {
+  try {
+    const roleName = (
+      req.user?.role?.name ||
+      (typeof req.user?.role === "string" ? req.user.role : "")
+    )
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const isAdmin = ["admin", "superadmin"].includes(roleName);
+    const canEdit = req.user?.permissions?.buttons?.aboutControl?.edit === true;
+    const canDeploy =
+      req.user?.permissions?.buttons?.aboutControl?.deploy === true ||
+      req.user?.permissions?.buttons?.aboutControl?.publish === true;
+
+    if (!isAdmin && (!canEdit || !canDeploy)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Forbidden: You do not have 'edit' and 'deploy' permissions to modify About Us content.",
+      });
+    }
+
+    const { aboutContent } = req.body;
+    let settings = await WebsiteSettings.findOne();
+
+    if (!settings) {
+      settings = await WebsiteSettings.create({ aboutContent });
+    } else {
+      settings = await WebsiteSettings.findByIdAndUpdate(
+        settings._id,
+        { $set: { aboutContent: { ...settings.aboutContent?.toObject(), ...aboutContent } } },
+        { new: true, runValidators: true }
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "About Us screen configuration updated successfully!",
+      aboutContent: settings.aboutContent,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ active: true }).sort({ createdAt: -1 });

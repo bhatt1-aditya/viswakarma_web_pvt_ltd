@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,6 +6,9 @@ import {
   Users,
   PhoneCall,
   LayoutTemplate,
+  Compass,
+  Globe,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -28,7 +31,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const roleName = (
     user?.role?.name ||
     (typeof user?.role === "string" ? user.role : "")
-  ).toLowerCase();
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
   const isAdmin = ["admin", "superadmin"].includes(roleName);
   const displayRole =
     user?.role?.name ||
@@ -38,7 +43,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       ? "Admin"
       : "Telecaller Staff");
 
-  // Dynamic permission-based tab filtering: only show tabs that this user is granted
+  // Dynamic permission checks for CMS Controls
+  const canAccessHomeControl = isAdmin || permissions?.sidebar?.homeControl === true;
+  const canAccessAboutControl = isAdmin || permissions?.sidebar?.aboutControl === true;
+  const canAccessWebsiteControls = canAccessHomeControl || canAccessAboutControl;
+
+  const isWebsiteRoute =
+    location.pathname === "/home-control" || location.pathname === "/about-control";
+  const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(isWebsiteRoute);
+
+  useEffect(() => {
+    if (isWebsiteRoute) {
+      setWebsiteDropdownOpen(true);
+    }
+  }, [location.pathname, isWebsiteRoute]);
+
+  // Dynamic permission-based tab filtering: core standalone tabs
   const menuItems = [
     {
       label: "Dashboard",
@@ -55,18 +75,29 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       allowed: isAdmin || permissions?.sidebar?.telecaller === true,
     },
     {
-      label: "Home CMS",
-      icon: LayoutTemplate,
-      path: "/home-control",
-      badge: "CMS",
-      allowed: isAdmin || permissions?.sidebar?.homeControl === true,
-    },
-    {
       label: "Staff & Team",
       icon: Users,
       path: "/staff",
       badge: null,
       allowed: isAdmin || permissions?.sidebar?.staff === true,
+    },
+  ].filter((item) => item.allowed);
+
+  // Sub-items for Website Controls dropdown
+  const websiteSubItems = [
+    {
+      label: "Home Screen",
+      path: "/home-control",
+      badge: "CMS",
+      icon: LayoutTemplate,
+      allowed: canAccessHomeControl,
+    },
+    {
+      label: "About Us",
+      path: "/about-control",
+      badge: "CMS",
+      icon: Compass,
+      allowed: canAccessAboutControl,
     },
   ].filter((item) => item.allowed);
 
@@ -137,11 +168,164 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             )}
           </div>
 
-          {menuItems.map((item) => {
+          {menuItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             const active =
               location.pathname === item.path ||
               (item.path === "/dashboard" && location.pathname === "/admin");
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
+                  active
+                    ? "text-[#0756A5] font-bold bg-blue-50/80 shadow-xs"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                title={!isSidebarOpen ? item.label : undefined}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="activeAdminPill"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-[#0756A5] to-[#FF6900] rounded-r-full"
+                  />
+                )}
+
+                <div
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
+                    active
+                      ? "bg-[#0756A5] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
+                  }`}
+                >
+                  <Icon size={16} />
+                </div>
+
+                {isSidebarOpen && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex-1 flex items-center justify-between overflow-hidden"
+                  >
+                    <span className="truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                        {item.badge}
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+              </button>
+            );
+          })}
+
+          {/* WEBSITE CONTROLS DROPDOWN ACCORDION */}
+          {canAccessWebsiteControls && (
+            <div className="space-y-1">
+              <button
+                onClick={() => {
+                  if (!isSidebarOpen) {
+                    setIsSidebarOpen(true);
+                    setWebsiteDropdownOpen(true);
+                  } else {
+                    setWebsiteDropdownOpen(!websiteDropdownOpen);
+                  }
+                }}
+                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
+                  isWebsiteRoute
+                    ? "text-[#0756A5] font-bold bg-blue-50/50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                title={!isSidebarOpen ? "Website Controls" : undefined}
+              >
+                <div
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
+                    isWebsiteRoute
+                      ? "bg-gradient-to-tr from-[#0756A5] to-[#082B59] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
+                  }`}
+                >
+                  <Globe size={16} />
+                </div>
+
+                {isSidebarOpen && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex-1 flex items-center justify-between overflow-hidden"
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="truncate">Website Controls</span>
+                      <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-blue-100/70 text-[#0756A5]">
+                        CMS
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={14}
+                      className={`text-gray-400 transition-transform duration-200 shrink-0 ${
+                        websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
+                      }`}
+                    />
+                  </motion.div>
+                )}
+              </button>
+
+              {/* Submenu Dropdown List */}
+              <AnimatePresence>
+                {isSidebarOpen && websiteDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="pl-6 pr-1 space-y-1 overflow-hidden"
+                  >
+                    {websiteSubItems.map((sub) => {
+                      const SubIcon = sub.icon;
+                      const subActive = location.pathname === sub.path;
+                      return (
+                        <button
+                          key={sub.path}
+                          onClick={() => navigate(sub.path)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[11px] font-medium transition-all group ${
+                            subActive
+                              ? "bg-blue-50 text-[#0756A5] font-bold border-l-2 border-[#0756A5] shadow-2xs"
+                              : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 border-l-2 border-transparent"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <SubIcon
+                              size={14}
+                              className={
+                                subActive
+                                  ? "text-[#0756A5]"
+                                  : "text-gray-400 group-hover:text-[#0756A5]"
+                              }
+                            />
+                            <span className="truncate">{sub.label}</span>
+                          </div>
+                          {sub.badge && (
+                            <span className="px-1 py-0.2 rounded text-[8px] font-bold bg-gray-100 text-gray-500 group-hover:bg-blue-100 group-hover:text-[#0756A5]">
+                              {sub.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Remaining menu items (e.g. Staff & Team) */}
+          {menuItems.slice(2).map((item) => {
+            const Icon = item.icon;
+            const active = location.pathname === item.path;
 
             return (
               <button
@@ -313,11 +497,106 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   Admin Navigation
                 </span>
 
-                {menuItems.map((item) => {
+                {menuItems.slice(0, 2).map((item) => {
                   const Icon = item.icon;
                   const active =
                     location.pathname === item.path ||
                     (item.path === "/dashboard" && location.pathname === "/admin");
+
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
+                        active
+                          ? "bg-blue-50 text-[#0756A5] shadow-xs"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} className={active ? "text-[#0756A5]" : "text-gray-500"} />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+
+                {/* Mobile Website Controls Accordion */}
+                {canAccessWebsiteControls && (
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => setWebsiteDropdownOpen(!websiteDropdownOpen)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
+                        isWebsiteRoute ? "bg-blue-50 text-[#0756A5]" : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Globe size={18} className={isWebsiteRoute ? "text-[#0756A5]" : "text-gray-500"} />
+                        <span>Website Controls</span>
+                        <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-blue-100 text-[#0756A5]">
+                          CMS
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={16}
+                        className={`text-gray-400 transition-transform ${
+                          websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {websiteDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="pl-6 space-y-1 overflow-hidden"
+                        >
+                          {websiteSubItems.map((sub) => {
+                            const SubIcon = sub.icon;
+                            const subActive = location.pathname === sub.path;
+                            return (
+                              <button
+                                key={sub.path}
+                                onClick={() => {
+                                  navigate(sub.path);
+                                  setIsSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-medium transition-colors ${
+                                  subActive
+                                    ? "bg-blue-100/60 text-[#0756A5] font-bold"
+                                    : "text-gray-600 hover:bg-gray-50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <SubIcon size={15} />
+                                  <span>{sub.label}</span>
+                                </div>
+                                <span className="px-1 py-0.2 rounded text-[8px] font-bold bg-white text-gray-400">
+                                  CMS
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                {/* Remaining mobile menu items (e.g. Staff & Team) */}
+                {menuItems.slice(2).map((item) => {
+                  const Icon = item.icon;
+                  const active = location.pathname === item.path;
 
                   return (
                     <button

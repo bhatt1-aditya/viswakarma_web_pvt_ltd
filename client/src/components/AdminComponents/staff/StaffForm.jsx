@@ -8,6 +8,7 @@ import {
   PhoneCall,
   Users,
   LayoutDashboard,
+  Compass,
 } from "lucide-react";
 import API_BASE_URL from "../../../utils/apiConfig";
 import { INDIAN_STATES } from "../../../utils/indianStates";
@@ -18,6 +19,17 @@ const MODULE_DEFINITIONS = [
     name: "Home Screen CMS",
     icon: LayoutTemplate,
     description: "Manage public website copy, hero typewriter, 7 pillars & SLA guarantees",
+    buttons: [
+      { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
+      { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
+      { key: "delete", label: "Delete Elements", hint: "Allow removing phrases & items" },
+    ],
+  },
+  {
+    key: "aboutControl",
+    name: "About Us CMS",
+    icon: Compass,
+    description: "Manage About Us company story, mission, vision, core values & engineering framework",
     buttons: [
       { key: "edit", label: "Edit Content", hint: "Allow modifying text & configuration" },
       { key: "deploy", label: "Deploy / Publish", hint: "Allow saving & publishing live changes" },
@@ -62,6 +74,7 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
       dashboard: false,
       telecaller: true,
       homeControl: false,
+      aboutControl: false,
       staff: false,
       ...(initial?.permissions?.sidebar || {}),
     };
@@ -81,6 +94,13 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
         delete: false,
         ...(initial?.permissions?.buttons?.homeControl || {}),
       },
+      aboutControl: {
+        edit: false,
+        deploy: false,
+        publish: false,
+        delete: false,
+        ...(initial?.permissions?.buttons?.aboutControl || {}),
+      },
       staff: {
         add: false,
         edit: false,
@@ -93,6 +113,9 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
     // If initial had publish but not deploy, keep them synchronized
     if (buttons.homeControl?.publish && !buttons.homeControl.deploy) {
       buttons.homeControl.deploy = true;
+    }
+    if (buttons.aboutControl?.publish && !buttons.aboutControl.deploy) {
+      buttons.aboutControl.deploy = true;
     }
 
     return {
@@ -139,8 +162,11 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
       const newVal = !sectionButtons[action];
       const updatedSection = { ...sectionButtons, [action]: newVal };
 
-      // Keep deploy and publish synchronized for Home Control CMS
-      if (section === "homeControl" && (action === "deploy" || action === "publish")) {
+      // Keep deploy and publish synchronized for Home & About Control CMS
+      if (
+        (section === "homeControl" || section === "aboutControl") &&
+        (action === "deploy" || action === "publish")
+      ) {
         updatedSection.deploy = newVal;
         updatedSection.publish = newVal;
       }

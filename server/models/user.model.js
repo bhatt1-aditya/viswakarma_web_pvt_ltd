@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
         dashboard: { type: Boolean, default: true },
         telecaller: { type: Boolean, default: false },
         homeControl: { type: Boolean, default: false },
+        aboutControl: { type: Boolean, default: false },
         staff: { type: Boolean, default: false },
         leads: { type: Boolean, default: false },
         projects: { type: Boolean, default: false },
@@ -22,6 +23,12 @@ const userSchema = new mongoose.Schema(
 
       buttons: {
         homeControl: {
+          edit: { type: Boolean, default: false },
+          deploy: { type: Boolean, default: false },
+          publish: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+        },
+        aboutControl: {
           edit: { type: Boolean, default: false },
           deploy: { type: Boolean, default: false },
           publish: { type: Boolean, default: false },
