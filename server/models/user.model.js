@@ -14,12 +14,17 @@ const userSchema = new mongoose.Schema(
       sidebar: {
         dashboard: { type: Boolean, default: true },
         telecaller: { type: Boolean, default: false },
+        homeControl: { type: Boolean, default: false },
         staff: { type: Boolean, default: false },
         leads: { type: Boolean, default: false },
         projects: { type: Boolean, default: false },
       },
 
       buttons: {
+        homeControl: {
+          edit: { type: Boolean, default: false },
+          publish: { type: Boolean, default: false },
+        },
         telecaller: {
           call: { type: Boolean, default: true },
           updateStatus: { type: Boolean, default: true },
@@ -46,7 +51,7 @@ const userSchema = new mongoose.Schema(
       },
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // HASH PASSWORD

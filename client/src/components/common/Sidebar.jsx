@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Users,
   PhoneCall,
+  LayoutTemplate,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -52,6 +53,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/telecaller",
       badge: "Inbound",
       allowed: isAdmin || permissions?.sidebar?.telecaller === true,
+    },
+    {
+      label: "Home CMS",
+      icon: LayoutTemplate,
+      path: "/home-control",
+      badge: "CMS",
+      allowed: isAdmin || permissions?.sidebar?.homeControl === true,
     },
     {
       label: "Staff & Team",

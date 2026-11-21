@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import categoriesData from "../../data/categoriesData.json";
 import demosData from "../../data/demosData.json";
+import API_BASE_URL from "../../utils/apiConfig";
 
 const iconMap = {
   Globe: Globe,
@@ -135,6 +136,33 @@ const headlinePhrases = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const [homeData, setHomeData] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchHomeContent = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/settings/home`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.homeContent) {
+            setHomeData(data.homeContent);
+          }
+        }
+      } catch (e) {
+        // Fallback gracefully to default constants
+      }
+    };
+    fetchHomeContent();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeHeadlinePhrases =
+    homeData?.heroHeadlines && homeData.heroHeadlines.length > 0
+      ? homeData.heroHeadlines
+      : headlinePhrases;
 
   // Typewriter effect state
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -142,7 +170,8 @@ const Home = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const currentPhrase = headlinePhrases[phraseIndex];
+    const phraseCount = activeHeadlinePhrases.length;
+    const currentPhrase = activeHeadlinePhrases[phraseIndex % phraseCount] || activeHeadlinePhrases[0];
     let timer;
 
     if (isDeleting) {
@@ -150,7 +179,7 @@ const Home = () => {
         setDisplayText((prev) => prev.slice(0, -1));
         if (displayText.length <= 1) {
           setIsDeleting(false);
-          setPhraseIndex((prev) => (prev + 1) % headlinePhrases.length);
+          setPhraseIndex((prev) => (prev + 1) % phraseCount);
         }
       }, 35);
     } else {
@@ -165,7 +194,7 @@ const Home = () => {
     }
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, phraseIndex]);
+  }, [displayText, isDeleting, phraseIndex, activeHeadlinePhrases]);
 
   return (
     <div className="overflow-hidden">
@@ -189,12 +218,12 @@ const Home = () => {
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold text-[#FF8A00] tracking-wide backdrop-blur-md">
                 <Sparkles size={14} className="text-[#FF6900]" />
-                <span>Enterprise IT & Digital Solutions Partner</span>
+                <span>{homeData?.heroBadge || "Enterprise IT & Digital Solutions Partner"}</span>
               </div>
 
               {/* Animated Typewriter Headline */}
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white min-h-[3.6em] sm:min-h-[2.4em] flex flex-col justify-center">
-                <span>Transforming Ideas Into</span>{" "}
+                <span>{homeData?.heroTitlePrefix || "Transforming Ideas Into"}</span>{" "}
                 <span className="block mt-1">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6900] via-[#FF8A00] to-amber-300">
                     {displayText}
@@ -204,17 +233,18 @@ const Home = () => {
               </h1>
 
               <p className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Vishwakarma Web Private Limited delivers innovative software, web, mobile, AI, and digital solutions that help businesses grow, automate operations, and succeed in the digital world.
+                {homeData?.heroSubtitle ||
+                  "Vishwakarma Web Private Limited delivers innovative software, web, mobile, AI, and digital solutions that help businesses grow, automate operations, and succeed in the digital world."}
               </p>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    to="/services"
+                    to={homeData?.heroPrimaryBtnLink || "/services"}
                     className="px-6 py-3.5 rounded-xl bg-[#0756A5] text-white font-bold text-sm tracking-wide hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/40 flex items-center gap-2"
                   >
-                    <span>Explore Our Services</span>
+                    <span>{homeData?.heroPrimaryBtnText || "Explore Our Services"}</span>
                     <ArrowRight size={16} />
                   </Link>
                 </motion.div>
@@ -231,10 +261,10 @@ const Home = () => {
 
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    to="/quote"
+                    to={homeData?.heroSecondaryBtnLink || "/quote"}
                     className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm tracking-wide border border-white/20 transition-all backdrop-blur-md block"
                   >
-                    Start Your Project
+                    {homeData?.heroSecondaryBtnText || "Start Your Project"}
                   </Link>
                 </motion.div>
               </div>
@@ -596,23 +626,29 @@ const Home = () => {
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-[#FF8A00] text-xs font-bold uppercase tracking-wider backdrop-blur-md">
               <Sparkles size={14} />
-              <span>Our Strategic Advantage</span>
+              <span>{homeData?.strategicAdvantageTag || "Our Strategic Advantage"}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              Why Forward-Thinking Businesses Choose Vishwakarma Web
+              {homeData?.strategicAdvantageTitle || "Why Forward-Thinking Businesses Choose Vishwakarma Web"}
             </h2>
             <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
-              We eliminate technical friction and build high-performance software engineered for lasting commercial resilience.
+              {homeData?.strategicAdvantageSubtitle ||
+                "We eliminate technical friction and build high-performance software engineered for lasting commercial resilience."}
             </p>
           </div>
 
           {/* Balanced 3-Column Grid for Pillars 01 to 06 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coreStrategicPillars.map((point, idx) => {
-              const IconComp = point.icon;
+            {(homeData?.strategicPillars && homeData.strategicPillars.length > 0
+              ? homeData.strategicPillars
+              : coreStrategicPillars
+            ).map((point, idx) => {
+              const defaultPillar = coreStrategicPillars[idx] || coreStrategicPillars[0];
+              const IconComp = defaultPillar.icon || Code2;
+              const gradientClass = defaultPillar.gradient || "from-blue-600 to-cyan-500";
               return (
                 <motion.div
-                  key={point.number}
+                  key={point.number || idx}
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -622,11 +658,11 @@ const Home = () => {
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${point.gradient} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientClass} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
                         <IconComp size={22} />
                       </div>
                       <span className="text-xs font-mono font-bold text-gray-400 group-hover:text-[#FF8A00] transition-colors">
-                        Pillar {point.number}
+                        Pillar {point.number || `0${idx + 1}`}
                       </span>
                     </div>
 
@@ -672,11 +708,13 @@ const Home = () => {
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  Business-Oriented Approach: Technology Engineered for Measurable Commercial ROI
+                  {homeData?.strategicBannerTitle ||
+                    "Business-Oriented Approach: Technology Engineered for Measurable Commercial ROI"}
                 </h3>
 
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  We eliminate technical friction and vanity metrics. Every line of code, cloud architectural decision, and database schema is directly benchmarked against conversion rates, user retention, operational cost reduction, and bottom-line revenue.
+                  {homeData?.strategicBannerDesc ||
+                    "We eliminate technical friction and vanity metrics. Every line of code, cloud architectural decision, and database schema is directly benchmarked against conversion rates, user retention, operational cost reduction, and bottom-line revenue."}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -701,7 +739,9 @@ const Home = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-emerald-400">
                     <Activity size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">99.99%</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {homeData?.slaUptime || "99.99%"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Architecture SLA</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -712,7 +752,9 @@ const Home = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-amber-400">
                     <Clock size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">40% Faster</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {homeData?.slaTurnaround || "40% Faster"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Sprint Velocity</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -723,7 +765,9 @@ const Home = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-cyan-400">
                     <Award size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">100% IP</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {homeData?.slaEscrow || "100% IP"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Full Ownership</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -734,7 +778,9 @@ const Home = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-blue-400">
                     <Lock size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">Zero-Trust</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {homeData?.slaSecurity || "Zero-Trust"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Security Standard</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -978,30 +1024,42 @@ const Home = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-            Have an Idea? Let's Build Something Powerful.
+            {homeData?.ctaHeadline || "Have an Idea? Let's Build Something Powerful."}
           </h2>
 
           <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Partner with Vishwakarma Web Private Limited to architect custom software, web platforms, and mobile applications built for scale and commercial success.
+            {homeData?.ctaSubtitle ||
+              "Partner with Vishwakarma Web Private Limited to architect custom software, web platforms, and mobile applications built for scale and commercial success."}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
-                to="/quote"
+                to={homeData?.ctaPrimaryBtnLink || "/quote"}
                 className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white font-bold text-sm uppercase tracking-wider hover:shadow-glowOrange transition-all shadow-lg block"
               >
-                Request a Free Quote
+                {homeData?.ctaPrimaryBtnText || "Request a Free Quote"}
               </Link>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                to="/contact"
-                className="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md block"
-              >
-                Contact Our Team
-              </Link>
+              {homeData?.ctaWhatsappNumber ? (
+                <a
+                  href={`https://wa.me/${homeData.ctaWhatsappNumber.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md block"
+                >
+                  {homeData?.ctaSecondaryBtnText || "Contact Our Team"}
+                </a>
+              ) : (
+                <Link
+                  to="/contact"
+                  className="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md block"
+                >
+                  {homeData?.ctaSecondaryBtnText || "Contact Our Team"}
+                </Link>
+              )}
             </motion.div>
           </div>
         </div>

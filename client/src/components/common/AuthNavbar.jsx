@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Activity,
   PhoneCall,
+  LayoutTemplate,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -179,6 +180,17 @@ const AuthNavbar = ({ setIsSidebarOpen }) => {
                       >
                         <PhoneCall size={14} className="text-[#FF6900]" />
                         <span>Telecaller Portal</span>
+                      </Link>
+                    )}
+
+                    {(isAdmin || permissions?.sidebar?.homeControl === true) && (
+                      <Link
+                        to="/home-control"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#0756A5] transition-colors"
+                      >
+                        <LayoutTemplate size={14} className="text-[#FF6900]" />
+                        <span>Home Screen CMS</span>
                       </Link>
                     )}
 
