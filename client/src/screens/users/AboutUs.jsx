@@ -20,8 +20,9 @@ import {
   Terminal,
   Check,
 } from "lucide-react";
+import API_BASE_URL from "../../utils/apiConfig";
 
-const aboutPhrases = [
+const defaultAboutPhrases = [
   "Mission-Critical Software.",
   "Scalable Digital Platforms.",
   "Enterprise-Grade Applications.",
@@ -29,76 +30,182 @@ const aboutPhrases = [
   "Future-Ready Cloud Systems.",
 ];
 
-const coreValues = [
+const defaultCoreValues = [
   {
     number: "01",
     title: "Engineering Integrity",
     desc: "We write clean, documented, future-proof code that scales gracefully without hidden shortcuts or technical debt.",
     feature: "Strict modular architecture adhering to clean code standards.",
-    icon: Code2,
-    gradient: "from-blue-600 to-cyan-500",
   },
   {
     number: "02",
     title: "Commercial Transparency",
     desc: "Predictable milestone-driven deliverables, transparent sprint tracking, and clear scope agreements without surprise fees.",
     feature: "Bi-weekly sprint reviews and verifiable milestone demos.",
-    icon: ShieldCheck,
-    gradient: "from-[#FF6900] to-amber-500",
   },
   {
     number: "03",
     title: "Total IP Ownership",
     desc: "100% of all intellectual property, source repositories, databases, and design tokens belong permanently to the client.",
     feature: "Complete transfer of repositories, docs, and assets.",
-    icon: Target,
-    gradient: "from-blue-500 to-indigo-600",
   },
   {
     number: "04",
     title: "Enduring Technical SLA",
     desc: "We stand firmly behind our builds with continuous uptime assurance, security patching, and ongoing feature enhancement.",
     feature: "Proactive uptime monitoring and rapid SLA response.",
-    icon: Users,
-    gradient: "from-emerald-500 to-teal-600",
   },
 ];
 
-const engineeringFramework = [
+const defaultEngineeringFramework = [
   {
     step: "01",
     title: "Discovery & Enterprise Modeling",
     desc: "Comprehensive business process mapping, user journey planning, and data domain architecture.",
-    icon: Compass,
   },
   {
     step: "02",
     title: "Decoupled Modular Architecture",
     desc: "Building scalable frontend micro-interfaces and resilient backend REST APIs designed for scale.",
-    icon: Layers,
   },
   {
     step: "03",
     title: "Automated QA & Security Auditing",
     desc: "End-to-end regression testing, OWASP vulnerability scans, and Core Web Vitals optimization.",
-    icon: ShieldCheck,
   },
   {
     step: "04",
     title: "Cloud Orchestration & 24/7 SLA",
     desc: "Zero-downtime CI/CD container deployments, cloud monitoring, and dedicated developer retainers.",
-    icon: Server,
   },
 ];
 
+const valueIcons = [Code2, ShieldCheck, Target, Users];
+const valueGradients = [
+  "from-blue-600 to-cyan-500",
+  "from-[#FF6900] to-amber-500",
+  "from-blue-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+];
+const frameworkIcons = [Compass, Layers, ShieldCheck, Server];
+
 const AboutUs = () => {
+  const [aboutData, setAboutData] = useState({
+    heroBadge: "About Vishwakarma Web Private Limited",
+    heroTitlePrefix: "Architecting & Engineering",
+    heroHeadlines: defaultAboutPhrases,
+    heroSubtitle:
+      "Vishwakarma Web Private Limited is a specialized IT engineering and digital product firm based in Noida, India. We empower ambitious startups, growing mid-market companies, and large enterprises with resilient web platforms, mobile ecosystems, custom enterprise software, and automated AI workflows.",
+    heroPrimaryBtnText: "Explore 108 Services",
+    heroPrimaryBtnLink: "/services",
+    heroSecondaryBtnText: "Contact Our Team",
+    heroSecondaryBtnLink: "/contact",
+
+    missionTag: "MISSION CHARTER",
+    missionTitle: "Our Corporate Mission",
+    missionDesc:
+      "To empower startups, mid-market businesses, and global enterprises with high-reliability software, web platforms, mobile apps, and autonomous AI systems that streamline operations, eliminate human error, and accelerate commercial growth.",
+    missionPoints: [
+      "Architect decoupled, maintainable code with zero technical debt",
+      "Automate repetitive manual operations with intelligent software",
+      "Deliver transparent bi-weekly milestones with zero scope creep",
+    ],
+
+    visionTag: "VISION 2030",
+    visionTitle: "Our Long-Term Vision",
+    visionDesc:
+      "To be the most trusted technology engineering partner for organizations navigating digital transformation, recognized internationally for exceptional code craftsmanship, robust enterprise security, and measurable commercial return on investment.",
+    visionPoints: [
+      "Global standard for reliable enterprise full-stack engineering",
+      "Pioneering pragmatic AI and autonomous workflow integrations",
+      "Long-term client partnerships grounded in mutual commercial ROI",
+    ],
+
+    coreValuesTag: "Our Code of Conduct",
+    coreValuesTitle: "Our Guiding Principles & Core Values",
+    coreValuesSubtitle:
+      "The engineering ethos behind every line of code we write, every architecture we deploy, and every partnership we foster.",
+    coreValues: defaultCoreValues,
+
+    frameworkTag: "Predictable Delivery",
+    frameworkTitle: "Our Engineering Architecture Framework",
+    frameworkSubtitle:
+      "From business modeling to high-availability cloud orchestration, we apply structured engineering rigor at every stage.",
+    engineeringFramework: defaultEngineeringFramework,
+
+    guaranteeTag: "The Vishwakarma Commercial Guarantee",
+    guaranteeTitle: "Transparent Partnerships Rooted in Engineering Accountability",
+    guaranteeDesc:
+      "When you partner with Vishwakarma Web Private Limited, you retain 100% intellectual property ownership, direct access to dedicated senior developers, and milestone deliverables verified against pre-agreed acceptance criteria.",
+    slaUptime: "99.99%",
+    slaTurnaround: "2 Weeks",
+    slaEscrow: "100% IP",
+    slaSecurity: "Zero-Trust",
+
+    ctaTag: "Ready to Build Something Meaningful?",
+    ctaHeadline: "Let's Engineer Your Next Digital Milestone.",
+    ctaSubtitle:
+      "Partner with Vishwakarma Web Private Limited to turn business vision into scalable, enterprise-grade software.",
+    ctaPrimaryBtnText: "Request a Free Quote",
+    ctaPrimaryBtnLink: "/quote",
+    ctaSecondaryBtnText: "Schedule Consultation",
+    ctaSecondaryBtnLink: "/contact",
+  });
+
   // Typewriter effect state
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const currentPhrase = aboutPhrases[phraseIndex];
+    let isMounted = true;
+    fetch(`${API_BASE_URL}/settings/about`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.success && data.data) {
+          setAboutData((prev) => ({
+            ...prev,
+            ...data.data,
+            heroHeadlines:
+              Array.isArray(data.data.heroHeadlines) && data.data.heroHeadlines.length > 0
+                ? data.data.heroHeadlines
+                : defaultAboutPhrases,
+            missionPoints:
+              Array.isArray(data.data.missionPoints) && data.data.missionPoints.length > 0
+                ? data.data.missionPoints
+                : prev.missionPoints,
+            visionPoints:
+              Array.isArray(data.data.visionPoints) && data.data.visionPoints.length > 0
+                ? data.data.visionPoints
+                : prev.visionPoints,
+            coreValues:
+              Array.isArray(data.data.coreValues) && data.data.coreValues.length > 0
+                ? data.data.coreValues
+                : defaultCoreValues,
+            engineeringFramework:
+              Array.isArray(data.data.engineeringFramework) &&
+              data.data.engineeringFramework.length > 0
+                ? data.data.engineeringFramework
+                : defaultEngineeringFramework,
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn("Using offline fallback About Us defaults:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activePhrases =
+    Array.isArray(aboutData.heroHeadlines) && aboutData.heroHeadlines.length > 0
+      ? aboutData.heroHeadlines
+      : defaultAboutPhrases;
+
+  useEffect(() => {
+    const currentPhrase = activePhrases[phraseIndex % activePhrases.length] || activePhrases[0] || "";
     let timer;
 
     if (isDeleting) {
@@ -106,7 +213,7 @@ const AboutUs = () => {
         setDisplayText((prev) => prev.slice(0, -1));
         if (displayText.length <= 1) {
           setIsDeleting(false);
-          setPhraseIndex((prev) => (prev + 1) % aboutPhrases.length);
+          setPhraseIndex((prev) => (prev + 1) % activePhrases.length);
         }
       }, 35);
     } else {
@@ -121,7 +228,7 @@ const AboutUs = () => {
     }
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, phraseIndex]);
+  }, [displayText, isDeleting, phraseIndex, activePhrases]);
 
   return (
     <div className="overflow-hidden bg-[#F5F8FC]">
@@ -145,12 +252,12 @@ const AboutUs = () => {
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold text-[#FF8A00] tracking-wide backdrop-blur-md">
                 <Sparkles size={14} className="text-[#FF6900]" />
-                <span>About Vishwakarma Web Private Limited</span>
+                <span>{aboutData.heroBadge || "About Vishwakarma Web Private Limited"}</span>
               </div>
 
               {/* Animated Typewriter Headline */}
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white min-h-[3.6em] sm:min-h-[2.4em] flex flex-col justify-center">
-                <span>Architecting & Engineering</span>{" "}
+                <span>{aboutData.heroTitlePrefix || "Architecting & Engineering"}</span>{" "}
                 <span className="block mt-1">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6900] via-[#FF8A00] to-amber-300">
                     {displayText}
@@ -160,17 +267,18 @@ const AboutUs = () => {
               </h1>
 
               <p className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Vishwakarma Web Private Limited is a specialized IT engineering and digital product firm based in Noida, India. We empower ambitious startups, growing mid-market companies, and large enterprises with resilient web platforms, mobile ecosystems, custom enterprise software, and automated AI workflows.
+                {aboutData.heroSubtitle ||
+                  "Vishwakarma Web Private Limited is a specialized IT engineering and digital product firm based in Noida, India. We empower ambitious startups, growing mid-market companies, and large enterprises with resilient web platforms, mobile ecosystems, custom enterprise software, and automated AI workflows."}
               </p>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    to="/services"
+                    to={aboutData.heroPrimaryBtnLink || "/services"}
                     className="px-6 py-3.5 rounded-xl bg-[#0756A5] text-white font-bold text-sm tracking-wide hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/40 flex items-center gap-2"
                   >
-                    <span>Explore 108 Services</span>
+                    <span>{aboutData.heroPrimaryBtnText || "Explore 108 Services"}</span>
                     <ArrowRight size={16} />
                   </Link>
                 </motion.div>
@@ -187,10 +295,10 @@ const AboutUs = () => {
 
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    to="/contact"
+                    to={aboutData.heroSecondaryBtnLink || "/contact"}
                     className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm tracking-wide border border-white/20 transition-all backdrop-blur-md block"
                   >
-                    Contact Our Team
+                    {aboutData.heroSecondaryBtnText || "Contact Our Team"}
                   </Link>
                 </motion.div>
               </div>
@@ -348,25 +456,29 @@ const AboutUs = () => {
                     <Compass size={28} />
                   </div>
                   <span className="text-xs font-mono font-bold text-[#0756A5] px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
-                    MISSION CHARTER
+                    {aboutData.missionTag || "MISSION CHARTER"}
                   </span>
                 </div>
 
                 <h3 className="text-2xl font-bold text-[#082B59] group-hover:text-[#0756A5] transition-colors">
-                  Our Corporate Mission
+                  {aboutData.missionTitle || "Our Corporate Mission"}
                 </h3>
 
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  To empower startups, mid-market businesses, and global enterprises with high-reliability software, web platforms, mobile apps, and autonomous AI systems that streamline operations, eliminate human error, and accelerate commercial growth.
+                  {aboutData.missionDesc ||
+                    "To empower startups, mid-market businesses, and global enterprises with high-reliability software, web platforms, mobile apps, and autonomous AI systems that streamline operations, eliminate human error, and accelerate commercial growth."}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-gray-200/60 space-y-2.5">
-                {[
-                  "Architect decoupled, maintainable code with zero technical debt",
-                  "Automate repetitive manual operations with intelligent software",
-                  "Deliver transparent bi-weekly milestones with zero scope creep",
-                ].map((item, idx) => (
+                {(aboutData.missionPoints && aboutData.missionPoints.length > 0
+                  ? aboutData.missionPoints
+                  : [
+                      "Architect decoupled, maintainable code with zero technical debt",
+                      "Automate repetitive manual operations with intelligent software",
+                      "Deliver transparent bi-weekly milestones with zero scope creep",
+                    ]
+                ).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2.5 text-xs text-gray-700">
                     <CheckCircle2 size={16} className="text-[#0756A5] shrink-0" />
                     <span>{item}</span>
@@ -390,25 +502,29 @@ const AboutUs = () => {
                     <Target size={28} />
                   </div>
                   <span className="text-xs font-mono font-bold text-[#FF6900] px-3 py-1 rounded-full bg-orange-50 border border-orange-100">
-                    VISION 2030
+                    {aboutData.visionTag || "VISION 2030"}
                   </span>
                 </div>
 
                 <h3 className="text-2xl font-bold text-[#082B59] group-hover:text-[#FF6900] transition-colors">
-                  Our Long-Term Vision
+                  {aboutData.visionTitle || "Our Long-Term Vision"}
                 </h3>
 
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  To be the most trusted technology engineering partner for organizations navigating digital transformation, recognized internationally for exceptional code craftsmanship, robust enterprise security, and measurable commercial return on investment.
+                  {aboutData.visionDesc ||
+                    "To be the most trusted technology engineering partner for organizations navigating digital transformation, recognized internationally for exceptional code craftsmanship, robust enterprise security, and measurable commercial return on investment."}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-gray-200/60 space-y-2.5">
-                {[
-                  "Global standard for reliable enterprise full-stack engineering",
-                  "Pioneering pragmatic AI and autonomous workflow integrations",
-                  "Long-term client partnerships grounded in mutual commercial ROI",
-                ].map((item, idx) => (
+                {(aboutData.visionPoints && aboutData.visionPoints.length > 0
+                  ? aboutData.visionPoints
+                  : [
+                      "Global standard for reliable enterprise full-stack engineering",
+                      "Pioneering pragmatic AI and autonomous workflow integrations",
+                      "Long-term client partnerships grounded in mutual commercial ROI",
+                    ]
+                ).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2.5 text-xs text-gray-700">
                     <CheckCircle2 size={16} className="text-[#FF6900] shrink-0" />
                     <span>{item}</span>
@@ -427,22 +543,27 @@ const AboutUs = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100 text-[#FF6900] text-xs font-bold uppercase tracking-wider">
-              <span>Our Code of Conduct</span>
+              <span>{aboutData.coreValuesTag || "Our Code of Conduct"}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#082B59]">
-              Our Guiding Principles & Core Values
+              {aboutData.coreValuesTitle || "Our Guiding Principles & Core Values"}
             </h2>
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-              The engineering ethos behind every line of code we write, every architecture we deploy, and every partnership we foster.
+              {aboutData.coreValuesSubtitle ||
+                "The engineering ethos behind every line of code we write, every architecture we deploy, and every partnership we foster."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {coreValues.map((val, idx) => {
-              const IconComp = val.icon;
+            {(aboutData.coreValues && aboutData.coreValues.length > 0
+              ? aboutData.coreValues
+              : defaultCoreValues
+            ).map((val, idx) => {
+              const IconComp = valueIcons[idx % valueIcons.length] || Code2;
+              const grad = valueGradients[idx % valueGradients.length] || "from-blue-600 to-cyan-500";
               return (
                 <motion.div
-                  key={val.number}
+                  key={val.number || idx}
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -452,11 +573,11 @@ const AboutUs = () => {
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${val.gradient} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${grad} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
                         <IconComp size={22} />
                       </div>
                       <span className="text-xs font-mono font-bold text-gray-400 group-hover:text-[#0756A5] transition-colors">
-                        Value {val.number}
+                        Value {val.number || idx + 1}
                       </span>
                     </div>
 
@@ -487,22 +608,26 @@ const AboutUs = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-100 text-[#0756A5] text-xs font-bold uppercase tracking-wider">
-              <span>Predictable Delivery</span>
+              <span>{aboutData.frameworkTag || "Predictable Delivery"}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#082B59]">
-              Our Engineering Architecture Framework
+              {aboutData.frameworkTitle || "Our Engineering Architecture Framework"}
             </h2>
             <p className="text-gray-600 text-sm leading-relaxed">
-              From business modeling to high-availability cloud orchestration, we apply structured engineering rigor at every stage.
+              {aboutData.frameworkSubtitle ||
+                "From business modeling to high-availability cloud orchestration, we apply structured engineering rigor at every stage."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {engineeringFramework.map((framework, idx) => {
-              const IconComp = framework.icon;
+            {(aboutData.engineeringFramework && aboutData.engineeringFramework.length > 0
+              ? aboutData.engineeringFramework
+              : defaultEngineeringFramework
+            ).map((framework, idx) => {
+              const IconComp = frameworkIcons[idx % frameworkIcons.length] || Compass;
               return (
                 <motion.div
-                  key={framework.step}
+                  key={framework.step || idx}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -512,7 +637,7 @@ const AboutUs = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-3xl font-extrabold text-blue-200 block font-mono">
-                      {framework.step}
+                      {framework.step || idx + 1}
                     </span>
                     <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#0756A5] flex items-center justify-center font-bold">
                       <IconComp size={16} />
@@ -551,15 +676,16 @@ const AboutUs = () => {
               <div className="lg:col-span-7 space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[#FF8A00] text-xs font-bold uppercase tracking-wider">
                   <BarChart3 size={14} />
-                  <span>The Vishwakarma Commercial Guarantee</span>
+                  <span>{aboutData.guaranteeTag || "The Vishwakarma Commercial Guarantee"}</span>
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  Transparent Partnerships Rooted in Engineering Accountability
+                  {aboutData.guaranteeTitle || "Transparent Partnerships Rooted in Engineering Accountability"}
                 </h3>
 
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  When you partner with Vishwakarma Web Private Limited, you retain 100% intellectual property ownership, direct access to dedicated senior developers, and milestone deliverables verified against pre-agreed acceptance criteria.
+                  {aboutData.guaranteeDesc ||
+                    "When you partner with Vishwakarma Web Private Limited, you retain 100% intellectual property ownership, direct access to dedicated senior developers, and milestone deliverables verified against pre-agreed acceptance criteria."}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -584,7 +710,9 @@ const AboutUs = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-emerald-400">
                     <Activity size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">99.99%</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {aboutData.slaUptime || "99.99%"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Architecture SLA</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -595,7 +723,9 @@ const AboutUs = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-amber-400">
                     <Clock size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">2 Weeks</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {aboutData.slaTurnaround || "2 Weeks"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Sprint Cadence</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -606,7 +736,9 @@ const AboutUs = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-cyan-400">
                     <Award size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">100% IP</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {aboutData.slaEscrow || "100% IP"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Total Asset Transfer</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -617,7 +749,9 @@ const AboutUs = () => {
                 <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
                   <div className="flex items-center gap-2 text-blue-400">
                     <Lock size={18} />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white">Zero-Trust</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-white">
+                      {aboutData.slaSecurity || "Zero-Trust"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-[#FF8A00]">Enterprise Security</p>
                   <p className="text-[11px] text-gray-300 leading-tight">
@@ -637,33 +771,34 @@ const AboutUs = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-[#FF8A00] text-xs font-bold uppercase tracking-wider backdrop-blur-md">
             <Sparkles size={14} />
-            <span>Ready to Build Something Meaningful?</span>
+            <span>{aboutData.ctaTag || "Ready to Build Something Meaningful?"}</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-            Let's Engineer Your Next Digital Milestone.
+            {aboutData.ctaHeadline || "Let's Engineer Your Next Digital Milestone."}
           </h2>
 
           <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Partner with Vishwakarma Web Private Limited to turn business vision into scalable, enterprise-grade software.
+            {aboutData.ctaSubtitle ||
+              "Partner with Vishwakarma Web Private Limited to turn business vision into scalable, enterprise-grade software."}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
-                to="/quote"
+                to={aboutData.ctaPrimaryBtnLink || "/quote"}
                 className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#FF6900] to-[#FF8A00] text-white font-bold text-sm uppercase tracking-wider hover:shadow-glowOrange transition-all shadow-lg block"
               >
-                Request a Free Quote
+                {aboutData.ctaPrimaryBtnText || "Request a Free Quote"}
               </Link>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
-                to="/contact"
+                to={aboutData.ctaSecondaryBtnLink || "/contact"}
                 className="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm uppercase tracking-wider border border-white/20 transition-all backdrop-blur-md block"
               >
-                Schedule Consultation
+                {aboutData.ctaSecondaryBtnText || "Schedule Consultation"}
               </Link>
             </motion.div>
           </div>

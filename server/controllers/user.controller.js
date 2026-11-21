@@ -2,13 +2,23 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import { generateToken } from "../utils/token.js";
 
+const isUserAdmin = (user) => {
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  return ["admin", "superadmin"].includes(roleName);
+};
+
 //  CREATE USER
 export const createUser = async (req, res) => {
   try {
     const { name, email, phone, password, role, permissions, state } = req.body;
 
-    const isAdmin = ["admin", "superadmin"].includes(req.user?.role?.name);
-    const canAdd = req.user?.permissions?.buttons?.staff?.add;
+    const isAdmin = isUserAdmin(req.user);
+    const canAdd = req.user?.permissions?.buttons?.staff?.add === true;
 
     if (!isAdmin && !canAdd) {
       return res.status(403).json({ message: "Not authorized to add staff" });
@@ -183,8 +193,8 @@ export const updateUser = async (req, res) => {
   try {
     const { name, email, phone, role, permissions, state } = req.body;
 
-    const isAdmin = ["admin", "superadmin"].includes(req.user?.role?.name);
-    const canEdit = req.user?.permissions?.buttons?.staff?.edit;
+    const isAdmin = isUserAdmin(req.user);
+    const canEdit = req.user?.permissions?.buttons?.staff?.edit === true;
 
     if (!isAdmin && !canEdit) {
       return res.status(403).json({ message: "Not authorized to edit staff" });
@@ -217,8 +227,8 @@ export const updateUser = async (req, res) => {
 //  DELETE USER
 export const deleteUser = async (req, res) => {
   try {
-    const isAdmin = ["admin", "superadmin"].includes(req.user?.role?.name);
-    const canDelete = req.user?.permissions?.buttons?.staff?.delete;
+    const isAdmin = isUserAdmin(req.user);
+    const canDelete = req.user?.permissions?.buttons?.staff?.delete === true;
 
     if (!isAdmin && !canDelete) {
       return res.status(403).json({ message: "Not authorized to delete staff" });
