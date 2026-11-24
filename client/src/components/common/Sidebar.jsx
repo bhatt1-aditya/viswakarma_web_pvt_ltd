@@ -19,6 +19,12 @@ import {
   Building2,
   FolderGit2,
   Tag,
+  Handshake,
+  Code,
+  ShieldAlert,
+  DollarSign,
+  CheckSquare,
+  Video,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -38,14 +44,30 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   )
     .toLowerCase()
     .replace(/[\s_-]+/g, "");
+
+  const isSuperAdmin = ["superadmin"].includes(roleName);
   const isAdmin = ["admin", "superadmin"].includes(roleName);
-  const displayRole =
-    user?.role?.name ||
-    (typeof user?.role === "string" && user.role.trim()
-      ? user.role
-      : isAdmin
+  const isPM = ["projectmanager", "pm"].includes(roleName);
+  const isDeveloper = ["developer", "dev"].includes(roleName);
+  const isQA = ["qatester", "qa"].includes(roleName);
+  const isClient = ["client"].includes(roleName) || user?.isClient === true;
+  const isTelecaller = roleName === "telecaller";
+
+  const displayRole = isSuperAdmin
+    ? "Super Admin"
+    : isAdmin
       ? "Admin"
-      : "Telecaller Staff");
+      : isPM
+        ? "Project Manager"
+        : isDeveloper
+          ? "Developer"
+          : isQA
+            ? "QA Tester"
+            : isClient
+              ? "Client"
+              : isTelecaller
+                ? "Telecaller Staff"
+                : user?.role?.name || "Staff";
 
   // Dynamic permission checks for Website Controls
   const hasWebsiteMaster = isAdmin || permissions?.sidebar?.websiteControl === true;
@@ -63,32 +85,138 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const canAccessPricingControl =
     isAdmin || (hasWebsiteMaster && permissions?.sidebar?.pricingControl === true);
 
-  // Dynamic permission-based tab filtering: core standalone tabs
-  const menuItems = [
-    {
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/dashboard",
-      badge: "Live",
-      allowed: isAdmin || permissions?.sidebar?.dashboard === true,
-    },
-    {
-      label: "Telecaller",
-      icon: PhoneCall,
-      path: "/telecaller",
-      badge: "Inbound",
-      allowed: isAdmin || permissions?.sidebar?.telecaller === true,
-    },
-    {
-      label: "Staff & Team",
-      icon: Users,
-      path: "/staff",
-      badge: null,
-      allowed: isAdmin || permissions?.sidebar?.staff === true,
-    },
-  ].filter((item) => item.allowed);
+  // Dynamic menu items tailored by Role & Permissions
+  let menuItems = [];
 
-  // Sub-items for Website Controls dropdown - ONLY show sub-tabs that have permission!
+  if (isClient) {
+    menuItems = [
+      {
+        label: "Client Portal",
+        icon: FolderGit2,
+        path: "/client-portal",
+        badge: "Portal",
+        allowed: true,
+      },
+    ];
+  } else if (isDeveloper) {
+    menuItems = [
+      {
+        label: "Dev Workspace",
+        icon: Code,
+        path: "/developer-dashboard",
+        badge: "Sprint",
+        allowed: true,
+      },
+      {
+        label: "Sprint Tasks",
+        icon: CheckSquare,
+        path: "/developer-dashboard",
+        badge: null,
+        allowed: true,
+      },
+    ];
+  } else if (isQA) {
+    menuItems = [
+      {
+        label: "QA Testing Hub",
+        icon: ShieldAlert,
+        path: "/qa-dashboard",
+        badge: "QA",
+        allowed: true,
+      },
+    ];
+  } else if (isPM) {
+    menuItems = [
+      {
+        label: "PM Dashboard",
+        icon: LayoutDashboard,
+        path: "/pm-dashboard",
+        badge: "PM",
+        allowed: true,
+      },
+      {
+        label: "Projects Lifecycle",
+        icon: FolderGit2,
+        path: "/pm-dashboard",
+        badge: "Active",
+        allowed: true,
+      },
+      {
+        label: "Staff & Team",
+        icon: Users,
+        path: "/staff",
+        badge: null,
+        allowed: isAdmin || permissions?.sidebar?.staff === true,
+      },
+    ];
+  } else if (isTelecaller) {
+    menuItems = [
+      {
+        label: "Telecaller CRM",
+        icon: PhoneCall,
+        path: "/telecaller",
+        badge: "Inbound",
+        allowed: true,
+      },
+      {
+        label: "Confirmed Deals",
+        icon: Handshake,
+        path: "/deals",
+        badge: null,
+        allowed: true,
+      },
+      {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+        badge: null,
+        allowed: permissions?.sidebar?.dashboard === true,
+      },
+    ];
+  } else {
+    // Super Admin & Admin or custom Staff
+    menuItems = [
+      {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+        badge: "Live",
+        allowed: isAdmin || permissions?.sidebar?.dashboard === true,
+      },
+      {
+        label: "Telecaller CRM",
+        icon: PhoneCall,
+        path: "/telecaller",
+        badge: "Inbound",
+        allowed: isAdmin || permissions?.sidebar?.telecaller === true,
+      },
+      {
+        label: "Deal Approvals",
+        icon: Handshake,
+        path: "/deals",
+        badge: "Review",
+        allowed: isAdmin || permissions?.sidebar?.deals === true,
+      },
+      {
+        label: "Projects Lifecycle",
+        icon: FolderGit2,
+        path: "/pm-dashboard",
+        badge: "PM",
+        allowed: isAdmin || permissions?.sidebar?.projects === true,
+      },
+      {
+        label: "Staff & Team",
+        icon: Users,
+        path: "/staff",
+        badge: null,
+        allowed: isAdmin || permissions?.sidebar?.staff === true,
+      },
+    ];
+  }
+
+  menuItems = menuItems.filter((item) => item.allowed);
+
+  // Sub-items for Website Controls dropdown
   const websiteSubItems = [
     {
       label: "Home Screen",
@@ -134,7 +262,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     },
   ].filter((item) => item.allowed);
 
-  // Parent Website Controls tab only shows if user is Admin OR has master websiteControl AND at least one sub-tab checked
   const canAccessWebsiteControls =
     (isAdmin || hasWebsiteMaster) && websiteSubItems.length > 0;
 
@@ -149,6 +276,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     location.pathname === "/portfolio-admin" ||
     location.pathname === "/pricing-control" ||
     location.pathname === "/pricing-admin";
+
   const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(isWebsiteRoute);
 
   useEffect(() => {
@@ -185,7 +313,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     Vishwakarma
                   </span>
                   <span className="text-[10px] font-semibold text-[#FF6900] tracking-wide block uppercase">
-                    Admin Suite
+                    {displayRole}
                   </span>
                 </div>
               </motion.div>
@@ -219,12 +347,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           <div className="px-3 pb-2">
             {isSidebarOpen && (
               <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase">
-                Core Console
+                {displayRole} Console
               </span>
             )}
           </div>
 
-          {menuItems.slice(0, 2).map((item) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             const active =
               location.pathname === item.path ||
@@ -232,13 +360,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
             return (
               <button
-                key={item.path}
+                key={item.label}
                 onClick={() => navigate(item.path)}
-                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
-                  active
-                    ? "text-[#0756A5] font-bold bg-blue-50/80 shadow-xs"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${active
+                  ? "text-[#0756A5] font-bold bg-blue-50/80 shadow-xs"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
                 title={!isSidebarOpen ? item.label : undefined}
               >
                 {active && (
@@ -250,11 +377,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 )}
 
                 <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
-                    active
-                      ? "bg-[#0756A5] text-white shadow-xs"
-                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
-                  }`}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${active
+                    ? "bg-[#0756A5] text-white shadow-xs"
+                    : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
+                    }`}
                 >
                   <Icon size={16} />
                 </div>
@@ -280,7 +406,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
           {/* WEBSITE CONTROLS DROPDOWN ACCORDION */}
           {canAccessWebsiteControls && (
-            <div className="space-y-1">
+            <div className="space-y-1 pt-2">
               <button
                 onClick={() => {
                   if (!isSidebarOpen) {
@@ -290,19 +416,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     setWebsiteDropdownOpen(!websiteDropdownOpen);
                   }
                 }}
-                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
-                  isWebsiteRoute
-                    ? "text-[#0756A5] font-bold bg-blue-50/50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${isWebsiteRoute
+                  ? "text-[#0756A5] font-bold bg-blue-50/50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
                 title={!isSidebarOpen ? "Website Controls" : undefined}
               >
                 <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
-                    isWebsiteRoute
-                      ? "bg-gradient-to-tr from-[#0756A5] to-[#082B59] text-white shadow-xs"
-                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
-                  }`}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${isWebsiteRoute
+                    ? "bg-gradient-to-tr from-[#0756A5] to-[#082B59] text-white shadow-xs"
+                    : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
+                    }`}
                 >
                   <Globe size={16} />
                 </div>
@@ -322,9 +446,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     </div>
                     <ChevronDown
                       size={14}
-                      className={`text-gray-400 transition-transform duration-200 shrink-0 ${
-                        websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
-                      }`}
+                      className={`text-gray-400 transition-transform duration-200 shrink-0 ${websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
+                        }`}
                     />
                   </motion.div>
                 )}
@@ -347,11 +470,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                         <button
                           key={sub.path}
                           onClick={() => navigate(sub.path)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[11px] font-medium transition-all group ${
-                            subActive
-                              ? "bg-blue-50 text-[#0756A5] font-bold border-l-2 border-[#0756A5] shadow-2xs"
-                              : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 border-l-2 border-transparent"
-                          }`}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[11px] font-medium transition-all group ${subActive
+                            ? "bg-blue-50 text-[#0756A5] font-bold border-l-2 border-[#0756A5] shadow-2xs"
+                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 border-l-2 border-transparent"
+                            }`}
                         >
                           <div className="flex items-center gap-2 truncate">
                             <SubIcon
@@ -377,59 +499,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               </AnimatePresence>
             </div>
           )}
-
-          {/* Remaining menu items (e.g. Staff & Team) */}
-          {menuItems.slice(2).map((item) => {
-            const Icon = item.icon;
-            const active = location.pathname === item.path;
-
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 group text-left ${
-                  active
-                    ? "text-[#0756A5] font-bold bg-blue-50/80 shadow-xs"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-                title={!isSidebarOpen ? item.label : undefined}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="activeAdminPill"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-[#0756A5] to-[#FF6900] rounded-r-full"
-                  />
-                )}
-
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shrink-0 ${
-                    active
-                      ? "bg-[#0756A5] text-white shadow-xs"
-                      : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#0756A5]"
-                  }`}
-                >
-                  <Icon size={16} />
-                </div>
-
-                {isSidebarOpen && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex-1 flex items-center justify-between overflow-hidden"
-                  >
-                    <span className="truncate">{item.label}</span>
-                    {item.badge && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                        {item.badge}
-                      </span>
-                    )}
-                  </motion.div>
-                )}
-              </button>
-            );
-          })}
 
           {/* QUICK LINKS SECTION (When expanded) */}
           {isSidebarOpen && (
@@ -474,12 +543,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0756A5] to-[#FF6900] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "VK"}
               </div>
               {isSidebarOpen && (
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-gray-800 truncate">
-                    {user?.name || "Administrator"}
+                    {user?.name || "User"}
                   </p>
                   <p className="text-[10px] text-gray-400 flex items-center gap-1 truncate">
                     <ShieldCheck size={10} className="text-[#0756A5]" />
@@ -534,7 +603,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                       Vishwakarma
                     </span>
                     <span className="text-[10px] font-semibold text-[#FF6900] tracking-wide block uppercase">
-                      Admin Workspace
+                      {displayRole}
                     </span>
                   </div>
                 </div>
@@ -550,10 +619,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               {/* Menu items */}
               <div className="flex-1 p-4 space-y-2 overflow-y-auto">
                 <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase px-2 block mb-1">
-                  Admin Navigation
+                  Navigation
                 </span>
 
-                {menuItems.slice(0, 2).map((item) => {
+                {menuItems.map((item) => {
                   const Icon = item.icon;
                   const active =
                     location.pathname === item.path ||
@@ -561,16 +630,15 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
                   return (
                     <button
-                      key={item.path}
+                      key={item.label}
                       onClick={() => {
                         navigate(item.path);
                         setIsSidebarOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
-                        active
-                          ? "bg-blue-50 text-[#0756A5] shadow-xs"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${active
+                        ? "bg-blue-50 text-[#0756A5] shadow-xs"
+                        : "text-gray-700 hover:bg-gray-50"
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={18} className={active ? "text-[#0756A5]" : "text-gray-500"} />
@@ -587,12 +655,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
                 {/* Mobile Website Controls Accordion */}
                 {canAccessWebsiteControls && (
-                  <div className="space-y-1">
+                  <div className="space-y-1 pt-2">
                     <button
                       onClick={() => setWebsiteDropdownOpen(!websiteDropdownOpen)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
-                        isWebsiteRoute ? "bg-blue-50 text-[#0756A5]" : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${isWebsiteRoute ? "bg-blue-50 text-[#0756A5]" : "text-gray-700 hover:bg-gray-50"
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <Globe size={18} className={isWebsiteRoute ? "text-[#0756A5]" : "text-gray-500"} />
@@ -603,9 +670,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                       </div>
                       <ChevronDown
                         size={16}
-                        className={`text-gray-400 transition-transform ${
-                          websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
-                        }`}
+                        className={`text-gray-400 transition-transform ${websiteDropdownOpen ? "rotate-180 text-[#0756A5]" : ""
+                          }`}
                       />
                     </button>
 
@@ -627,11 +693,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                                   navigate(sub.path);
                                   setIsSidebarOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-medium transition-colors ${
-                                  subActive
-                                    ? "bg-blue-100/60 text-[#0756A5] font-bold"
-                                    : "text-gray-600 hover:bg-gray-50"
-                                }`}
+                                className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-medium transition-colors ${subActive
+                                  ? "bg-blue-100/60 text-[#0756A5] font-bold"
+                                  : "text-gray-600 hover:bg-gray-50"
+                                  }`}
                               >
                                 <div className="flex items-center gap-2">
                                   <SubIcon size={15} />
@@ -648,37 +713,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     </AnimatePresence>
                   </div>
                 )}
-
-                {/* Remaining mobile menu items (e.g. Staff & Team) */}
-                {menuItems.slice(2).map((item) => {
-                  const Icon = item.icon;
-                  const active = location.pathname === item.path;
-
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => {
-                        navigate(item.path);
-                        setIsSidebarOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
-                        active
-                          ? "bg-blue-50 text-[#0756A5] shadow-xs"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon size={18} className={active ? "text-[#0756A5]" : "text-gray-500"} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.badge && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
 
                 <div className="pt-6 space-y-2 border-t border-gray-100 mt-6">
                   <span className="text-[10px] font-extrabold text-gray-400 tracking-wider uppercase px-2 block">
@@ -714,13 +748,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0756A5] to-[#FF6900] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "VK"}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-gray-800 truncate">
-                        {user?.name || "Admin"}
+                        {user?.name || "User"}
                       </p>
-                      <p className="text-[10px] text-gray-400">Online</p>
+                      <p className="text-[10px] text-gray-400">{displayRole}</p>
                     </div>
                   </div>
                   <button

@@ -10,6 +10,18 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6, select: false },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
 
+    // Client Lifecycle Attributes
+    clientId: { type: String, sparse: true, unique: true, index: true },
+    companyName: { type: String, trim: true },
+    city: { type: String, trim: true },
+    address: { type: String, trim: true },
+    gstin: { type: String, trim: true },
+    isClient: { type: Boolean, default: false },
+    isActivated: { type: Boolean, default: true },
+    assignedTelecaller: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    otp: { type: String },
+    otpExpires: { type: Date },
+
     permissions: {
       sidebar: {
         dashboard: { type: Boolean, default: true },
@@ -24,6 +36,14 @@ const userSchema = new mongoose.Schema(
         staff: { type: Boolean, default: false },
         leads: { type: Boolean, default: false },
         projects: { type: Boolean, default: false },
+        // New Lifecycle System Navigation Items
+        projectManager: { type: Boolean, default: false },
+        developer: { type: Boolean, default: false },
+        qaTester: { type: Boolean, default: false },
+        clientPortal: { type: Boolean, default: false },
+        deals: { type: Boolean, default: false },
+        meetings: { type: Boolean, default: false },
+        tasks: { type: Boolean, default: false },
       },
 
       buttons: {
@@ -72,6 +92,7 @@ const userSchema = new mongoose.Schema(
           updateStatus: { type: Boolean, default: true },
           addNote: { type: Boolean, default: true },
           delete: { type: Boolean, default: false },
+          confirmDeal: { type: Boolean, default: true },
         },
         staff: {
           add: { type: Boolean, default: false },
@@ -89,6 +110,8 @@ const userSchema = new mongoose.Schema(
           view: { type: Boolean, default: false },
           edit: { type: Boolean, default: false },
           delete: { type: Boolean, default: false },
+          manageTeam: { type: Boolean, default: false },
+          manageMilestones: { type: Boolean, default: false },
         },
       },
     },

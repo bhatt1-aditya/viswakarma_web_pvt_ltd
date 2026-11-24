@@ -5,6 +5,7 @@ import NonAuthLayout from "./routes/middleware/NonAuthLayout";
 import { authRoutes, nonAuthRoutes, userRoutes } from "./routes/AllRoutes";
 import UserLayout from "./routes/middleware/UserLayout";
 import AuthProvider from "./context/AuthContext";
+import SocketProvider from "./context/SocketContext";
 import { Toaster } from "react-hot-toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -57,14 +58,16 @@ const App = () => {
     <React.Fragment>
       <BrowserRouter>
         <AuthProvider>
-          <div>
-            <Routes>
-              {renderNonAuthRoutes(nonAuthRoutes)}
-              {renderAuthRoutes(authRoutes)}
-              {renderUserRoutes(userRoutes)}
-            </Routes>
-            <Toaster></Toaster>
-          </div>
+          <SocketProvider>
+            <div>
+              <Routes>
+                {renderNonAuthRoutes(nonAuthRoutes)}
+                {renderAuthRoutes(authRoutes)}
+                {renderUserRoutes(userRoutes)}
+              </Routes>
+              <Toaster position="top-right" />
+            </div>
+          </SocketProvider>
         </AuthProvider>
       </BrowserRouter>
     </React.Fragment>

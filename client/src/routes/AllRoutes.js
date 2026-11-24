@@ -16,6 +16,14 @@ import PortfolioControl from "../screens/auth/PortfolioControl";
 import PricingControl from "../screens/auth/PricingControl";
 import Profile from "../screens/auth/Profile";
 
+// Enterprise Client Project Lifecycle Dashboards & Workspaces
+import ProjectManagerDashboard from "../screens/dashboards/ProjectManagerDashboard";
+import DeveloperDashboard from "../screens/dashboards/DeveloperDashboard";
+import QADashboard from "../screens/dashboards/QADashboard";
+import ClientPortal from "../screens/dashboards/ClientPortal";
+import DealManagement from "../screens/auth/DealManagement";
+import ProjectWorkspace from "../screens/projects/ProjectWorkspace";
+
 // Public User Screens
 import Home from "../screens/users/Home";
 import AboutUs from "../screens/users/AboutUs";
@@ -57,6 +65,13 @@ export const authRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
   { path: "/admin", component: <Dashboard /> },
   { path: "/telecaller", component: <Telecaller /> },
+  { path: "/deals", component: <DealManagement /> },
+  { path: "/pm-dashboard", component: <ProjectManagerDashboard /> },
+  { path: "/developer-dashboard", component: <DeveloperDashboard /> },
+  { path: "/qa-dashboard", component: <QADashboard /> },
+  { path: "/client-portal", component: <ClientPortal /> },
+  { path: "/projects/:id", component: <ProjectWorkspace /> },
+  { path: "/project-workspace/:id", component: <ProjectWorkspace /> },
   { path: "/home-control", component: <HomeControl /> },
   { path: "/about-control", component: <AboutControl /> },
   { path: "/services-control", component: <ServicesControl /> },
@@ -69,9 +84,9 @@ export const authRoutes = [
   { path: "/pricing-admin", component: <PricingControl /> },
   { path: "/staff", component: <Staff /> },
   { path: "/profile", component: <Profile /> },
-  // All other admin paths redirect to dashboard
+  // Lead and Projects redirects
   { path: "/lead", component: <Navigate to="/dashboard" replace /> },
-  { path: "/projects", component: <Navigate to="/dashboard" replace /> },
+  { path: "/projects", component: <Navigate to="/pm-dashboard" replace /> },
 ];
 
 export const nonAuthRoutes = [
