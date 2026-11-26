@@ -79,6 +79,21 @@ export const AuthProvider = ({ children }) => {
     setPermissions(null);
   };
 
+  const roleName = (
+    user?.role?.name ||
+    (typeof user?.role === "string" ? user.role : "")
+  )
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+
+  const isSuperAdmin = ["superadmin"].includes(roleName);
+  const isAdmin = ["admin", "superadmin"].includes(roleName);
+  const isTelecaller = roleName === "telecaller";
+  const isPM = ["projectmanager", "pm"].includes(roleName);
+  const isDeveloper = ["developer", "dev"].includes(roleName);
+  const isQA = ["qatester", "qa"].includes(roleName);
+  const isClient = ["client"].includes(roleName) || user?.isClient === true;
+
   return (
     <AuthContext.Provider
       value={{
@@ -88,6 +103,14 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUser,
+        roleName,
+        isSuperAdmin,
+        isAdmin,
+        isTelecaller,
+        isPM,
+        isDeveloper,
+        isQA,
+        isClient,
       }}
     >
       {children}

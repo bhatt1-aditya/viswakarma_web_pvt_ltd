@@ -25,7 +25,7 @@ const Login = () => {
     const newErrors = { identifier: "", password: "", general: "" };
 
     if (!identifier.trim()) {
-      newErrors.identifier = "Email or 10-digit phone number is required.";
+      newErrors.identifier = "Client ID, Email, or Phone number is required.";
       valid = false;
     }
 
@@ -56,17 +56,30 @@ const Login = () => {
       login(userData, res.data.token);
 
       const roleName = (userData?.role?.name || (typeof userData?.role === "string" ? userData.role : "")).toLowerCase();
-      const isAdmin = ["admin", "superadmin"].includes(roleName);
+      const isAdmin = ["admin", "superadmin", "super admin"].includes(roleName);
+      const isClient = roleName === "client" || userData?.isClient === true;
+      const isPM = ["project manager", "projectmanager", "pm"].includes(roleName);
+      const isDev = ["developer", "dev"].includes(roleName);
+      const isQA = ["qa tester", "qatester", "qa"].includes(roleName);
+      const isTelecaller = roleName === "telecaller";
 
-      // Route user to their primary permitted tab
-      if (isAdmin || userData?.permissions?.sidebar?.dashboard) {
-        navigate("/dashboard");
-      } else if (userData?.permissions?.sidebar?.telecaller) {
+      // Route user directly to their role-specific dashboard
+      if (isClient) {
+        navigate("/client-portal");
+      } else if (isPM) {
+        navigate("/pm-dashboard");
+      } else if (isDev) {
+        navigate("/developer-dashboard");
+      } else if (isQA) {
+        navigate("/qa-dashboard");
+      } else if (isTelecaller) {
         navigate("/telecaller");
+      } else if (isAdmin || userData?.permissions?.sidebar?.dashboard) {
+        navigate("/dashboard");
       } else if (userData?.permissions?.sidebar?.staff) {
         navigate("/staff");
       } else {
-        navigate("/telecaller");
+        navigate("/dashboard");
       }
     } catch (error) {
       setErrors({
@@ -160,12 +173,12 @@ const Login = () => {
           {/* Identifier Input */}
           <div className="mb-4">
             <label className="text-xs font-bold text-gray-700 block mb-1">
-              Email Address or Phone Number
+              Client ID, Email Address or Phone Number
             </label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="admin@vishwakarmaweb.com or 9876543210"
+                placeholder="Client ID (e.g. VK-CL-2026-0001), Email or Phone"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className={`w-full p-3 rounded-xl border text-xs focus:outline-none transition-colors ${

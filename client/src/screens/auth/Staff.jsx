@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -41,22 +42,32 @@ function initials(name = "") {
 }
 
 function Modal({ title, children, onClose }) {
-  return (
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-gray-900/50 backdrop-blur-xs"
+          className="fixed inset-0 bg-gray-900/40"
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto shadow-2xl z-10"
+          className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto overscroll-contain shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] z-10"
         >
           <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
             <h4 className="text-base font-bold text-[#082B59]">{title}</h4>
@@ -70,7 +81,8 @@ function Modal({ title, children, onClose }) {
           {children}
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

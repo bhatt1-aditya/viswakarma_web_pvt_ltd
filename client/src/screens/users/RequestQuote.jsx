@@ -134,7 +134,7 @@ const RequestQuote = () => {
     try {
       await axios.post(`${API_BASE_URL}/quotes/submit`, formData);
       setSubmitted(true);
-      toast.success("Project inquiry received! An architect will reach out.");
+      toast.success("Project inquiry received! A confirmation has been sent to your WhatsApp.");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit project inquiry. Please contact directly.");
     } finally {

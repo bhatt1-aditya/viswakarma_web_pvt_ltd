@@ -1,4 +1,9 @@
 import Inquiry from "../models/inquiry.model.js";
+import {
+  sendCallLogWhatsAppNotification,
+  sendInquiryWhatsAppNotification,
+  sendWhatsAppMessage,
+} from "../utils/whatsapp.js";
 
 // SUBMIT INQUIRY (Public Contact Form)
 export const createInquiry = async (req, res) => {
@@ -25,6 +30,21 @@ export const createInquiry = async (req, res) => {
       projectDescription: finalDescription,
       status: "New",
     });
+
+    // Send WhatsApp notification asynchronously
+    sendInquiryWhatsAppNotification({
+      fullName,
+      phone,
+      email,
+      state: state || "All",
+      companyName: companyName || "",
+      serviceRequired: serviceRequired || "General Consultation",
+      projectBudget: projectBudget || "",
+      projectTimeline: projectTimeline || "",
+      projectDescription: finalDescription,
+    }).catch((err) =>
+      console.error("[WhatsApp] Error sending inquiry notification:", err.message)
+    );
 
     res.status(201).json({
       success: true,
@@ -78,7 +98,8 @@ export const getAllInquiries = async (req, res) => {
 export const updateInquiryStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, noteText, author } = req.body;
+    const { status, noteText, author, sendWhatsApp = true } = req.body;
+    const trimmedNote = typeof noteText === "string" ? noteText.trim() : "";
 
     const roleName = (
       req.user?.role?.name ||
@@ -99,7 +120,7 @@ export const updateInquiryStatus = async (req, res) => {
           message: "Forbidden: You do not have permission to update lead status.",
         });
       }
-      if (noteText && !canAddNote) {
+      if (trimmedNote && !canAddNote) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: You do not have permission to add call notes.",
@@ -111,10 +132,10 @@ export const updateInquiryStatus = async (req, res) => {
     if (status) updateData.status = status;
 
     let updateQuery = { $set: updateData };
-    if (noteText) {
+    if (trimmedNote) {
       updateQuery.$push = {
         notes: {
-          text: noteText,
+          text: trimmedNote,
           author: author || "Admin",
           createdAt: new Date(),
         },
@@ -126,7 +147,23 @@ export const updateInquiryStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Inquiry not found" });
     }
 
-    res.status(200).json({ success: true, message: "Inquiry updated", inquiry });
+    let whatsappResult = null;
+    if (trimmedNote && sendWhatsApp !== false) {
+      whatsappResult = await sendCallLogWhatsAppNotification({
+        fullName: inquiry.fullName,
+        phone: inquiry.phone,
+        serviceName: inquiry.serviceRequired || "General Consultation",
+        noteText: trimmedNote,
+        status: inquiry.status,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Inquiry updated",
+      inquiry,
+      whatsappSent: Boolean(whatsappResult?.success),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -156,6 +193,40 @@ export const deleteInquiry = async (req, res) => {
     const { id } = req.params;
     await Inquiry.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Inquiry deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// SEND CUSTOM WHATSAPP MESSAGE (Admin / Telecaller)
+export const sendCustomWhatsApp = async (req, res) => {
+  try {
+    const { number, message } = req.body;
+    if (!number || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number and message are required.",
+      });
+    }
+
+    const result = await sendWhatsAppMessage({
+      number,
+      message,
+    });
+
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: "WhatsApp message sent successfully!",
+        data: result.data,
+      });
+    } else {
+      return res.status(502).json({
+        success: false,
+        message: "WhatsApp gateway failed to send message.",
+        data: result.data,
+      });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

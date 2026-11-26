@@ -66,6 +66,9 @@ export const loginUser = async (req, res) => {
         $or: [
           { phone: input },
           { email: input.toLowerCase() },
+          { clientId: input },
+          { clientId: input.toUpperCase() },
+          { clientId: input.toLowerCase() },
         ],
       };
     }
@@ -85,7 +88,9 @@ export const loginUser = async (req, res) => {
     }
 
     let roleTitle = "staff";
-    if (user.role && typeof user.role === "object" && user.role.name) {
+    if (user.isClient) {
+      roleTitle = "client";
+    } else if (user.role && typeof user.role === "object" && user.role.name) {
       roleTitle = user.role.name;
     } else if (user.role) {
       const foundRole = await Role.findById(user.role);

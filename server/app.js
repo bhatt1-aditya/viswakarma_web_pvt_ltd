@@ -1,10 +1,14 @@
 import express from "express";
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import dns from "node:dns";
 import routes from "./routes/all.routes.js";
 import { connectDB } from "./config/db.js";
+import { initSocket } from "./socket/socketHandler.js";
+import { seedDefaultRoles } from "./utils/seedRoles.js";
 
 dotenv.config();
 
@@ -15,9 +19,12 @@ try {
 }
 
 const app = express();
+const httpServer = http.createServer(app);
 
-// CONNECT DB
-connectDB();
+// CONNECT DB & SEED ROLES
+connectDB().then(() => {
+  seedDefaultRoles();
+}).catch(() => {});
 
 // MIDDLEWARES
 const allowedOrigins = [
@@ -25,6 +32,23 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
   "http://localhost:5173",
 ];
+
+// INITIALIZE SOCKET.IO
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  },
+});
+
+initSocket(io);
+app.set("io", io);
 
 app.use(
   cors({
@@ -42,6 +66,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Attach io to all incoming requests
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // HEALTH CHECK
 app.get("/", (req, res) => {
@@ -68,8 +98,8 @@ app.use((err, req, res, next) => {
 // SERVER START
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Vishwakarma Web API running on http://localhost:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Vishwakarma Web API & Realtime Socket running on http://localhost:${PORT}`);
 });
 
 export default app;
