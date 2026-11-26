@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -31,6 +32,16 @@ const DealManagement = () => {
   const [rejectionModal, setRejectionModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  // Lock background scroll while a modal is open
+  useEffect(() => {
+    if (!approvalResult && !rejectionModal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [approvalResult, rejectionModal]);
 
   const fetchDeals = useCallback(async () => {
     try {
@@ -70,8 +81,12 @@ const DealManagement = () => {
         }
       );
 
-      toast.success("Deal approved! Client account and Project created.");
-      setApprovalResult(res.data.data);
+      if (res.data?.whatsappSent) {
+        toast.success("Deal approved! Login details sent to client on WhatsApp.");
+      } else {
+        toast.success("Deal approved! Client account and Project created.");
+      }
+      setApprovalResult({ ...res.data.data, whatsappSent: res.data?.whatsappSent });
       fetchDeals();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to approve deal");
@@ -340,130 +355,149 @@ const DealManagement = () => {
       )}
 
       {/* APPROVAL SUCCESS MODAL */}
-      {approvalResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 space-y-4"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle2 size={28} />
-            </div>
+      {typeof document !== "undefined" &&
+        approvalResult &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+            <div
+              onClick={() => setApprovalResult(null)}
+              className="fixed inset-0 bg-gray-900/40"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative z-10 bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] border border-gray-200 space-y-4"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                <CheckCircle2 size={28} />
+              </div>
 
-            <div className="text-center">
-              <h3 className="text-lg font-black text-[#082B59]">
-                Deal Approved & Provisioned!
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                The client user account, unique IDs, and dedicated project workspace have been created.
-              </p>
-            </div>
+              <div className="text-center">
+                <h3 className="text-lg font-black text-[#082B59]">
+                  Deal Approved & Provisioned!
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  The client user account, unique IDs, and dedicated project workspace have been created.
+                </p>
+                {approvalResult.whatsappSent && (
+                  <p className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mt-2">
+                    Login credentials sent via WhatsApp to {approvalResult.client.phone}
+                  </p>
+                )}
+              </div>
 
-            <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500">Client ID:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-[#0756A5]">
-                    {approvalResult.client.clientId}
+              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Client ID:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-bold text-[#0756A5]">
+                      {approvalResult.client.clientId}
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(approvalResult.client.clientId, "Client ID")}
+                      className="text-gray-400 hover:text-[#0756A5]"
+                    >
+                      <Copy size={13} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Login Mobile:</span>
+                  <span className="font-mono font-bold text-gray-800">
+                    {approvalResult.client.phone}
                   </span>
-                  <button
-                    onClick={() => copyToClipboard(approvalResult.client.clientId, "Client ID")}
-                    className="text-gray-400 hover:text-[#0756A5]"
-                  >
-                    <Copy size={13} />
-                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Initial Password:</span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    {approvalResult.client.tempPassword}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-blue-100">
+                  <span className="text-gray-500">Project ID:</span>
+                  <span className="font-mono font-bold text-[#082B59]">
+                    {approvalResult.project.projectId}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500">Login Mobile:</span>
-                <span className="font-mono font-bold text-gray-800">
-                  {approvalResult.client.phone}
-                </span>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setApprovalResult(null)}
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100"
+                >
+                  Done
+                </button>
+                <button
+                  onClick={() => {
+                    setApprovalResult(null);
+                    navigate(`/projects/${approvalResult.project.id}`);
+                  }}
+                  className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white text-xs font-bold shadow-sm"
+                >
+                  Go to Workspace
+                </button>
               </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500">Initial Password:</span>
-                <span className="font-mono font-bold text-emerald-600">
-                  {approvalResult.client.tempPassword}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-blue-100">
-                <span className="text-gray-500">Project ID:</span>
-                <span className="font-mono font-bold text-[#082B59]">
-                  {approvalResult.project.projectId}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setApprovalResult(null)}
-                className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100"
-              >
-                Done
-              </button>
-              <button
-                onClick={() => {
-                  setApprovalResult(null);
-                  navigate(`/projects/${approvalResult.project.id}`);
-                }}
-                className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white text-xs font-bold shadow-sm"
-              >
-                Go to Workspace
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+            </motion.div>
+          </div>,
+          document.body
+        )}
 
       {/* REJECTION MODAL */}
-      {rejectionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-xs">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-100 space-y-4"
-          >
-            <h3 className="text-base font-extrabold text-[#082B59]">
-              Reject Deal Confirmation
-            </h3>
-            <p className="text-xs text-gray-500">
-              Please specify the reason for rejection. This will be transmitted to the telecaller and the lead will revert to negotiation.
-            </p>
+      {typeof document !== "undefined" &&
+        rejectionModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+            <div
+              onClick={() => setRejectionModal(null)}
+              className="fixed inset-0 bg-gray-900/40"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative z-10 bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] border border-gray-200 space-y-4"
+            >
+              <h3 className="text-base font-extrabold text-[#082B59]">
+                Reject Deal Confirmation
+              </h3>
+              <p className="text-xs text-gray-500">
+                Please specify the reason for rejection. This will be transmitted to the telecaller and the lead will revert to negotiation.
+              </p>
 
-            <form onSubmit={handleRejectSubmit} className="space-y-4">
-              <textarea
-                rows={3}
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="e.g. Contract value below minimum threshold or milestone timeline unrealistic..."
-                className="w-full text-xs border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-red-500"
-                required
-              />
+              <form onSubmit={handleRejectSubmit} className="space-y-4">
+                <textarea
+                  rows={3}
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="e.g. Contract value below minimum threshold or milestone timeline unrealistic..."
+                  className="w-full text-xs border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-red-500"
+                  required
+                />
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setRejectionModal(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={processing}
-                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-bold shadow-sm hover:bg-red-700 disabled:opacity-50"
-                >
-                  {processing ? "Rejecting..." : "Confirm Rejection"}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRejectionModal(null)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={processing}
+                    className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-bold shadow-sm hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {processing ? "Rejecting..." : "Confirm Rejection"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

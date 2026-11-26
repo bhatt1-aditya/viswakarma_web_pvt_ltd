@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   FolderGit2,
@@ -76,6 +77,7 @@ const ProjectWorkspace = () => {
   const [newMeetingTime, setNewMeetingTime] = useState("");
   const [newMeetingLink, setNewMeetingLink] = useState("");
   const [newMeetingAgenda, setNewMeetingAgenda] = useState("");
+  const [sendMeetingWhatsApp, setSendMeetingWhatsApp] = useState(true);
 
   const [momModalOpen, setMomModalOpen] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState("");
@@ -86,6 +88,7 @@ const ProjectWorkspace = () => {
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [invTitle, setInvTitle] = useState("");
   const [invAmount, setInvAmount] = useState("");
+  const [sendInvoiceWhatsApp, setSendInvoiceWhatsApp] = useState(true);
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [repCompleted, setRepCompleted] = useState("");
@@ -107,8 +110,37 @@ const ProjectWorkspace = () => {
   const [selectedQA, setSelectedQA] = useState("");
   const [selectedTelecaller, setSelectedTelecaller] = useState("");
   const [selectedDevs, setSelectedDevs] = useState([]);
+  const [sendTeamWhatsApp, setSendTeamWhatsApp] = useState(true);
   const [savingTeam, setSavingTeam] = useState(false);
   const [loadingStaff, setLoadingStaff] = useState(false);
+
+  // Lock background page scroll while any modal is open
+  useEffect(() => {
+    if (
+      !teamModalOpen &&
+      !meetingModalOpen &&
+      !invoiceModalOpen &&
+      !taskModalOpen &&
+      !momModalOpen &&
+      !bugModalOpen &&
+      !reportModalOpen
+    ) {
+      return;
+    }
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [
+    teamModalOpen,
+    meetingModalOpen,
+    invoiceModalOpen,
+    taskModalOpen,
+    momModalOpen,
+    bugModalOpen,
+    reportModalOpen,
+  ]);
 
   const fetchProjectDetails = useCallback(async () => {
     try {
@@ -285,7 +317,7 @@ const ProjectWorkspace = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
+      const res = await axios.post(
         `${API_BASE_URL}/meetings/project/${id}`,
         {
           title: newMeetingTitle,
@@ -293,11 +325,26 @@ const ProjectWorkspace = () => {
           startTime: newMeetingTime,
           meetingLink: newMeetingLink,
           agenda: newMeetingAgenda,
+          sendWhatsApp: sendMeetingWhatsApp,
         },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      toast.success("Meeting scheduled!");
+      if (sendMeetingWhatsApp) {
+        if (res.data?.whatsappSent) {
+          toast.success(`Meeting scheduled & WhatsApp sent (${res.data.whatsappSentCount})!`);
+        } else {
+          toast.success("Meeting scheduled (no WhatsApp notifications sent).");
+        }
+      } else {
+        toast.success("Meeting scheduled!");
+      }
       setMeetingModalOpen(false);
+      setNewMeetingTitle("");
+      setNewMeetingDate("");
+      setNewMeetingTime("");
+      setNewMeetingLink("");
+      setNewMeetingAgenda("");
+      setSendMeetingWhatsApp(true);
       fetchProjectDetails();
     } catch {
       toast.error("Failed to schedule meeting");
@@ -404,13 +451,24 @@ const ProjectWorkspace = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
+      const res = await axios.post(
         `${API_BASE_URL}/financial/project/${id}`,
-        { title: invTitle, amount: invAmount },
+        { title: invTitle, amount: invAmount, sendWhatsApp: sendInvoiceWhatsApp },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      toast.success("Invoice generated!");
+      if (sendInvoiceWhatsApp) {
+        if (res.data?.whatsappSent) {
+          toast.success("Invoice generated & WhatsApp sent to client!");
+        } else {
+          toast.success("Invoice generated (WhatsApp delivery could not be confirmed).");
+        }
+      } else {
+        toast.success("Invoice generated!");
+      }
       setInvoiceModalOpen(false);
+      setInvTitle("");
+      setInvAmount("");
+      setSendInvoiceWhatsApp(true);
       fetchProjectDetails();
     } catch {
       toast.error("Failed to create invoice");
@@ -427,6 +485,7 @@ const ProjectWorkspace = () => {
         ? project.assignedDevelopers.map((d) => d._id || d)
         : []
     );
+    setSendTeamWhatsApp(true);
     setTeamModalOpen(true);
 
     try {
@@ -454,17 +513,26 @@ const ProjectWorkspace = () => {
     setSavingTeam(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
+      const res = await axios.put(
         `${API_BASE_URL}/lifecycle-projects/${id}/team`,
         {
           assignedProjectManager: selectedPM || null,
           assignedDevelopers: selectedDevs,
           assignedQATester: selectedQA || null,
           assignedTelecaller: selectedTelecaller || null,
+          sendWhatsApp: sendTeamWhatsApp,
         },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      toast.success("Team assignments updated successfully!");
+      if (sendTeamWhatsApp) {
+        if (res.data?.whatsappSent) {
+          toast.success(`Team updated & WhatsApp notification sent (${res.data.whatsappSentCount})!`);
+        } else {
+          toast.success("Team assignments updated (no WhatsApp notifications sent).");
+        }
+      } else {
+        toast.success("Team assignments updated successfully!");
+      }
       setTeamModalOpen(false);
       fetchProjectDetails();
     } catch (err) {
@@ -1142,7 +1210,10 @@ const ProjectWorkspace = () => {
             </div>
 
             <button
-              onClick={() => setMeetingModalOpen(true)}
+              onClick={() => {
+                setSendMeetingWhatsApp(true);
+                setMeetingModalOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0756A5] text-white text-xs font-bold"
             >
               <Plus size={15} />
@@ -1263,7 +1334,10 @@ const ProjectWorkspace = () => {
 
             {(isAdmin || isSuperAdmin || isPM) && (
               <button
-                onClick={() => setInvoiceModalOpen(true)}
+                onClick={() => {
+                  setSendInvoiceWhatsApp(true);
+                  setInvoiceModalOpen(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
               >
                 <Plus size={15} />
@@ -1376,67 +1450,135 @@ const ProjectWorkspace = () => {
       )}
 
       {/* MODAL: SCHEDULE MEETING */}
-      {meetingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 space-y-4">
-            <h3 className="font-extrabold text-base text-[#082B59]">Schedule Project Meeting</h3>
-            <form onSubmit={handleScheduleMeeting} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Meeting Title *"
-                value={newMeetingTitle}
-                onChange={(e) => setNewMeetingTitle(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-                required
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="date"
-                  value={newMeetingDate}
-                  onChange={(e) => setNewMeetingDate(e.target.value)}
-                  className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-                  required
-                />
-                <input
-                  type="time"
-                  value={newMeetingTime}
-                  onChange={(e) => setNewMeetingTime(e.target.value)}
-                  className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-                  required
-                />
-              </div>
-              <input
-                type="url"
-                placeholder="Google Meet Link (e.g. meet.google.com/xxx-xxxx-xxx)"
-                value={newMeetingLink}
-                onChange={(e) => setNewMeetingLink(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-              />
-              <textarea
-                placeholder="Meeting Agenda"
-                value={newMeetingAgenda}
-                onChange={(e) => setNewMeetingAgenda(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-xl p-3"
-              />
-              <div className="flex justify-end gap-2 pt-2">
+      {typeof document !== "undefined" &&
+        meetingModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+            <div
+              onClick={() => setMeetingModalOpen(false)}
+              className="fixed inset-0 bg-gray-900/40"
+            />
+            <div className="relative z-10 bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] border border-gray-200 space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-base text-[#082B59]">
+                    Schedule Project Meeting
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    {project.name} ({project.projectId})
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setMeetingModalOpen(false)}
-                  className="px-4 py-2 text-xs font-bold text-gray-500"
+                  className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0756A5] text-white text-xs font-bold"
-                >
-                  Schedule
+                  <X size={15} />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleScheduleMeeting} className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">
+                    Meeting Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sprint Review & Demo"
+                    value={newMeetingTitle}
+                    onChange={(e) => setNewMeetingTitle(e.target.value)}
+                    className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={newMeetingDate}
+                      onChange={(e) => setNewMeetingDate(e.target.value)}
+                      className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">
+                      Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={newMeetingTime}
+                      onChange={(e) => setNewMeetingTime(e.target.value)}
+                      className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">
+                    Google Meet Link
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                    value={newMeetingLink}
+                    onChange={(e) => setNewMeetingLink(e.target.value)}
+                    className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">
+                    Meeting Agenda
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Key discussion topics..."
+                    value={newMeetingAgenda}
+                    onChange={(e) => setNewMeetingAgenda(e.target.value)}
+                    className="w-full text-xs border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-[#0756A5]"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendMeetingWhatsApp}
+                    onChange={(e) => setSendMeetingWhatsApp(e.target.checked)}
+                    className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-emerald-900 block">
+                      Send meeting link & details on WhatsApp
+                    </span>
+                    <span className="text-[11px] text-emerald-700">
+                      Notifies client and assigned project team via WhatsApp
+                    </span>
+                  </div>
+                </label>
+
+                <div className="flex justify-end gap-2.5 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setMeetingModalOpen(false)}
+                    className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white text-xs font-bold shadow-sm"
+                  >
+                    Schedule
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* MODAL: PUBLISH MOM */}
       {momModalOpen && (
@@ -1594,50 +1736,109 @@ const ProjectWorkspace = () => {
       )}
 
       {/* MODAL: CREATE INVOICE */}
-      {invoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 space-y-4">
-            <h3 className="font-extrabold text-base text-[#082B59]">Generate Invoice</h3>
-            <form onSubmit={handleCreateInvoice} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Invoice Title (e.g. Milestone 2 Deliverable) *"
-                value={invTitle}
-                onChange={(e) => setInvTitle(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-                required
-              />
-              <input
-                type="number"
-                placeholder="Amount (₹) *"
-                value={invAmount}
-                onChange={(e) => setInvAmount(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2"
-                required
-              />
-              <div className="flex justify-end gap-2 pt-2">
+      {typeof document !== "undefined" &&
+        invoiceModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+            <div
+              onClick={() => setInvoiceModalOpen(false)}
+              className="fixed inset-0 bg-gray-900/40"
+            />
+            <div className="relative z-10 bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] border border-gray-200 space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-base text-[#082B59]">
+                    Generate Invoice
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    {project.name} ({project.projectId})
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setInvoiceModalOpen(false)}
-                  className="px-4 py-2 text-xs font-bold text-gray-500"
+                  className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
-                >
-                  Generate
+                  <X size={15} />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleCreateInvoice} className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">
+                    Invoice Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Milestone 2 Deliverable"
+                    value={invTitle}
+                    onChange={(e) => setInvTitle(e.target.value)}
+                    className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">
+                    Amount (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 50000"
+                    value={invAmount}
+                    onChange={(e) => setInvAmount(e.target.value)}
+                    className="w-full text-xs border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0756A5]"
+                    required
+                  />
+                </div>
+
+                <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendInvoiceWhatsApp}
+                    onChange={(e) => setSendInvoiceWhatsApp(e.target.checked)}
+                    className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-emerald-900 block">
+                      Send invoice details on WhatsApp
+                    </span>
+                    <span className="text-[11px] text-emerald-700">
+                      Automatically notifies {project.client?.name || "client"}
+                      {project.client?.phone ? ` (${project.client.phone})` : ""} via WhatsApp
+                    </span>
+                  </div>
+                </label>
+
+                <div className="flex justify-end gap-2.5 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setInvoiceModalOpen(false)}
+                    className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold shadow-sm"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
       {/* MODAL: ASSIGN PROJECT TEAM & ROLES */}
-      {teamModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl border border-gray-100 space-y-5 my-8">
+      {typeof document !== "undefined" &&
+        teamModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+            <div
+              onClick={() => setTeamModalOpen(false)}
+              className="fixed inset-0 bg-gray-900/40"
+            />
+            <div className="relative z-10 bg-white rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] border border-gray-200 space-y-5">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
                 <h3 className="font-extrabold text-base text-[#082B59]">
@@ -1769,6 +1970,23 @@ const ProjectWorkspace = () => {
                   </div>
                 </div>
 
+                <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendTeamWhatsApp}
+                    onChange={(e) => setSendTeamWhatsApp(e.target.checked)}
+                    className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-emerald-900 block">
+                      Send team assignment notification on WhatsApp
+                    </span>
+                    <span className="text-[11px] text-emerald-700">
+                      Notifies assigned team members and client via WhatsApp
+                    </span>
+                  </div>
+                </label>
+
                 {/* MODAL ACTIONS */}
                 <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
                   <button
@@ -1799,7 +2017,8 @@ const ProjectWorkspace = () => {
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

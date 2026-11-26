@@ -219,7 +219,7 @@ const Pricing = () => {
         projectBudget: estimatedRange,
         projectDescription: `Calculated requirements: Type: ${projectType}, Scale: ${scale}, AI: ${needAI}, Mobile: ${needMobile}, ERP: ${needERP}`,
       });
-      toast.success("Estimate saved! A senior consultant will reach out with a detailed proposal.");
+      toast.success("Estimate saved! A confirmation message has been sent to your WhatsApp.");
       setClientName("");
       setClientEmail("");
       setClientPhone("");

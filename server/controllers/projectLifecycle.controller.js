@@ -5,6 +5,7 @@ import AuditLog from "../models/auditLog.model.js";
 import Notification from "../models/notification.model.js";
 import { generateProjectId } from "../utils/idGenerator.js";
 import { emitToProject, emitToUser } from "../socket/socketHandler.js";
+import { sendTeamAssignmentWhatsAppNotification } from "../utils/whatsapp.js";
 
 // CREATE LIFECYCLE PROJECT (ADMIN / PM)
 export const createLifecycleProject = async (req, res) => {
@@ -172,7 +173,13 @@ export const getLifecycleProjectById = async (req, res) => {
 export const updateProjectTeam = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assignedProjectManager, assignedDevelopers, assignedQATester, assignedTelecaller } = req.body;
+    const {
+      assignedProjectManager,
+      assignedDevelopers,
+      assignedQATester,
+      assignedTelecaller,
+      sendWhatsApp = true,
+    } = req.body;
 
     const project = await Project.findById(id);
     if (!project) {
@@ -222,9 +229,32 @@ export const updateProjectTeam = async (req, res) => {
       updatedBy: req.user.name,
     });
 
+    const populatedProject = await Project.findById(project._id)
+      .populate("client", "name email phone clientId")
+      .populate("assignedProjectManager", "name email phone")
+      .populate("assignedDevelopers", "name email phone")
+      .populate("assignedQATester", "name email phone")
+      .populate("assignedTelecaller", "name email phone");
+
+    let whatsappResult = null;
+    if (sendWhatsApp !== false && populatedProject) {
+      whatsappResult = await sendTeamAssignmentWhatsAppNotification({
+        projectName: populatedProject.name,
+        projectId: populatedProject.projectId,
+        category: populatedProject.category,
+        client: populatedProject.client,
+        projectManager: populatedProject.assignedProjectManager,
+        qaTester: populatedProject.assignedQATester,
+        telecaller: populatedProject.assignedTelecaller,
+        developers: populatedProject.assignedDevelopers || [],
+      });
+    }
+
     res.status(200).json({
       message: "Project team updated successfully",
-      data: project,
+      data: populatedProject || project,
+      whatsappSent: Boolean(whatsappResult?.success),
+      whatsappSentCount: whatsappResult?.sentCount || 0,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

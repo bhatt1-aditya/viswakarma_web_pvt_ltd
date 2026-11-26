@@ -3,6 +3,7 @@ import Project from "../models/project.model.js";
 import AuditLog from "../models/auditLog.model.js";
 import { generateInvoiceNumber } from "../utils/idGenerator.js";
 import { emitToProject, emitToUser } from "../socket/socketHandler.js";
+import { sendInvoiceWhatsAppNotification } from "../utils/whatsapp.js";
 
 // GET PROJECT INVOICES
 export const getProjectInvoices = async (req, res) => {
@@ -26,9 +27,9 @@ export const getProjectInvoices = async (req, res) => {
 export const createInvoice = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { title, amount, dueDate, milestoneId, notes } = req.body;
+    const { title, amount, dueDate, milestoneId, notes, sendWhatsApp = true } = req.body;
 
-    const project = await Project.findById(projectId);
+    const project = await Project.findById(projectId).populate("client", "name email phone");
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
@@ -37,7 +38,7 @@ export const createInvoice = async (req, res) => {
 
     const invoice = await Payment.create({
       project: projectId,
-      client: project.client,
+      client: project.client?._id || project.client,
       invoiceNumber,
       title,
       amount: Number(amount) || 0,
@@ -59,9 +60,25 @@ export const createInvoice = async (req, res) => {
 
     emitToProject(projectId, "invoice_generated", invoice);
 
+    let whatsappResult = null;
+    if (sendWhatsApp !== false && project.client?.phone) {
+      whatsappResult = await sendInvoiceWhatsAppNotification({
+        fullName: project.client.name,
+        phone: project.client.phone,
+        projectName: project.name,
+        projectId: project.projectId,
+        invoiceNumber,
+        title,
+        amount,
+        dueDate,
+        notes,
+      });
+    }
+
     res.status(201).json({
       message: "Invoice created successfully",
       data: invoice,
+      whatsappSent: Boolean(whatsappResult?.success),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

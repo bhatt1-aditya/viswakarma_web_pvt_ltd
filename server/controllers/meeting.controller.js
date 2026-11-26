@@ -1,9 +1,11 @@
 import Meeting from "../models/meeting.model.js";
 import MeetingMinutes from "../models/meetingMinutes.model.js";
 import Task from "../models/task.model.js";
+import Project from "../models/project.model.js";
 import AuditLog from "../models/auditLog.model.js";
 import Notification from "../models/notification.model.js";
 import { emitToProject, emitToUser } from "../socket/socketHandler.js";
+import { sendMeetingWhatsAppNotification } from "../utils/whatsapp.js";
 
 // SCHEDULE MEETING
 export const scheduleMeeting = async (req, res) => {
@@ -17,6 +19,7 @@ export const scheduleMeeting = async (req, res) => {
       endTime,
       meetingLink = "",
       participants = [],
+      sendWhatsApp = true,
     } = req.body;
 
     const meeting = await Meeting.create({
@@ -48,9 +51,42 @@ export const scheduleMeeting = async (req, res) => {
 
     emitToProject(projectId, "meeting_scheduled", populated);
 
+    let whatsappResult = null;
+    if (sendWhatsApp !== false) {
+      const project = await Project.findById(projectId)
+        .populate("client", "name phone")
+        .populate("assignedProjectManager", "name phone")
+        .populate("assignedDevelopers", "name phone")
+        .populate("assignedQATester", "name phone")
+        .populate("assignedTelecaller", "name phone");
+
+      if (project) {
+        const recipients = [
+          project.client,
+          project.assignedProjectManager,
+          project.assignedQATester,
+          project.assignedTelecaller,
+          ...(Array.isArray(project.assignedDevelopers) ? project.assignedDevelopers : []),
+        ].filter(Boolean);
+
+        whatsappResult = await sendMeetingWhatsAppNotification({
+          projectName: project.name,
+          projectId: project.projectId,
+          title,
+          meetingDate,
+          startTime,
+          meetingLink,
+          agenda,
+          recipients,
+        });
+      }
+    }
+
     res.status(201).json({
       message: "Meeting scheduled successfully",
       data: populated,
+      whatsappSent: Boolean(whatsappResult?.success),
+      whatsappSentCount: whatsappResult?.sentCount || 0,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

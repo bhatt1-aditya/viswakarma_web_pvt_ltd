@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -87,13 +88,25 @@ const Telecaller = () => {
 
   // Inquiries data
   const [inquiries, setInquiries] = useState([]);
+  const [confirmedDealPhones, setConfirmedDealPhones] = useState(new Set());
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [noteText, setNoteText] = useState("");
+  const [sendNoteWhatsApp, setSendNoteWhatsApp] = useState(true);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
 
   // Deal Confirmation states
   const [dealModalOpen, setDealModalOpen] = useState(false);
+
+  // Lock background page scroll while a modal is open
+  useEffect(() => {
+    if (!noteModalOpen && !dealModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [noteModalOpen, dealModalOpen]);
   const [dealInquiry, setDealInquiry] = useState(null);
   const [dealValue, setDealValue] = useState("");
   const [dealAdvance, setDealAdvance] = useState("");
@@ -101,6 +114,7 @@ const Telecaller = () => {
   const [dealCategory, setDealCategory] = useState("Web Development");
   const [dealDays, setDealDays] = useState(30);
   const [dealCompanyName, setDealCompanyName] = useState("");
+  const [sendDealWhatsApp, setSendDealWhatsApp] = useState(true);
   const [submittingDeal, setSubmittingDeal] = useState(false);
 
   const handleConfirmDealSubmit = async (e) => {
@@ -113,7 +127,7 @@ const Telecaller = () => {
     try {
       setSubmittingDeal(true);
       const token = localStorage.getItem("token");
-      await axios.post(
+      const res = await axios.post(
         `${API_BASE_URL}/deals/submit`,
         {
           leadId: dealInquiry._id,
@@ -127,18 +141,39 @@ const Telecaller = () => {
           projectScope: dealScope || dealInquiry.projectDescription || dealInquiry.message || "",
           category: dealCategory,
           estimatedDays: Number(dealDays) || 30,
+          sendWhatsApp: sendDealWhatsApp,
         },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
-      toast.success("Deal confirmed & submitted for Admin Approval!");
+      if (sendDealWhatsApp) {
+        if (res.data?.whatsappSent) {
+          toast.success("Deal confirmed & WhatsApp message sent to client!");
+        } else {
+          toast.success("Deal confirmed & submitted (WhatsApp delivery could not be confirmed).");
+        }
+      } else {
+        toast.success("Deal confirmed & submitted for Admin Approval!");
+      }
+      setInquiries((prev) =>
+        prev.map((i) => (i._id === dealInquiry._id ? { ...i, status: "Closed" } : i))
+      );
+      const confirmedPhone = getCleanPhone(dealInquiry.phone);
+      if (confirmedPhone) {
+        setConfirmedDealPhones((prev) => {
+          const next = new Set(prev);
+          next.add(confirmedPhone);
+          return next;
+        });
+      }
       setDealModalOpen(false);
       setDealInquiry(null);
       setDealValue("");
       setDealAdvance("");
       setDealScope("");
+      setSendDealWhatsApp(true);
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit deal");
@@ -168,7 +203,7 @@ const Telecaller = () => {
         limit: 100,
       };
 
-      const [inqRes, quoteRes] = await Promise.allSettled([
+      const [inqRes, quoteRes, dealsRes] = await Promise.allSettled([
         axios.get(`${API_BASE_URL}/inquiries/all`, {
           params,
           withCredentials: true,
@@ -179,7 +214,21 @@ const Telecaller = () => {
           withCredentials: true,
           headers: authHeader,
         }),
+        axios.get(`${API_BASE_URL}/deals/all`, {
+          withCredentials: true,
+          headers: authHeader,
+        }),
       ]);
+
+      const activeDealPhones = new Set(
+        dealsRes.status === "fulfilled" && Array.isArray(dealsRes.value.data?.data)
+          ? dealsRes.value.data.data
+              .filter((d) => ["PENDING_APPROVAL", "APPROVED"].includes(d?.dealDetails?.status))
+              .map((d) => getCleanPhone(d.phone))
+              .filter(Boolean)
+          : []
+      );
+      setConfirmedDealPhones(activeDealPhones);
 
       const rawInquiries = inqRes.status === "fulfilled" && inqRes.value.data?.inquiries
         ? inqRes.value.data.inquiries.map((item) => ({
@@ -278,11 +327,20 @@ const Telecaller = () => {
         {
           noteText: noteText.trim(),
           author: user?.name || "Telecaller Staff",
+          sendWhatsApp: sendNoteWhatsApp,
         },
         { withCredentials: true, headers: authHeader }
       );
 
-      toast.success("Call note added to lead record");
+      if (sendNoteWhatsApp) {
+        if (res.data?.whatsappSent) {
+          toast.success("Call log added & WhatsApp message sent to client!");
+        } else {
+          toast.success("Call log added (WhatsApp delivery could not be confirmed).");
+        }
+      } else {
+        toast.success("Call note added to lead record");
+      }
       const updatedItem = res.data.inquiry || res.data.quote;
       if (updatedItem) {
         setInquiries((prev) =>
@@ -290,6 +348,7 @@ const Telecaller = () => {
         );
       }
       setNoteText("");
+      setSendNoteWhatsApp(true);
       setNoteModalOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save note");
@@ -498,6 +557,9 @@ const Telecaller = () => {
           {filteredInquiries.map((item) => {
             const cleanPhone = getCleanPhone(item.phone);
             const notes = item.notes || [];
+            const isDealClosed =
+              (item.status || "").toLowerCase() === "closed" ||
+              (cleanPhone && confirmedDealPhones.has(cleanPhone));
 
             return (
               <motion.div
@@ -682,6 +744,7 @@ const Telecaller = () => {
                           return;
                         }
                         setSelectedInquiry(item);
+                        setSendNoteWhatsApp(true);
                         setNoteModalOpen(true);
                       }}
                       disabled={!canAddNote}
@@ -698,19 +761,30 @@ const Telecaller = () => {
 
                     {/* Confirm Deal Button */}
                     <button
+                      disabled={isDealClosed}
                       onClick={() => {
+                        if (isDealClosed) return;
                         setDealInquiry(item);
                         setDealScope(item.projectDescription || item.message || "");
                         setDealCompanyName(item.companyName || "");
                         setDealValue("");
                         setDealAdvance("");
+                        setSendDealWhatsApp(true);
                         setDealModalOpen(true);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
-                      title="Submit confirmed deal for Admin Approval & Client Workspace Creation"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        isDealClosed
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
+                          : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-2xs hover:shadow-xs cursor-pointer"
+                      }`}
+                      title={
+                        isDealClosed
+                          ? "Deal already confirmed and closed"
+                          : "Submit confirmed deal for Admin Approval & Client Workspace Creation"
+                      }
                     >
-                      <Handshake size={13} />
-                      <span>Confirm Deal</span>
+                      {isDealClosed ? <CheckCircle2 size={13} /> : <Handshake size={13} />}
+                      <span>{isDealClosed ? "Deal Closed" : "Confirm Deal"}</span>
                     </button>
                   </div>
                 </div>
@@ -721,242 +795,285 @@ const Telecaller = () => {
       )}
 
       {/* ── 5. ADD TELECALLER CALL LOG / NOTE MODAL ── */}
-      <AnimatePresence>
-        {noteModalOpen && selectedInquiry && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setNoteModalOpen(false)}
-              className="fixed inset-0 bg-gray-900/50 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl z-10 space-y-4"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                <div>
-                  <h4 className="text-base font-bold text-[#082B59]">Add Telecaller Log</h4>
-                  <p className="text-xs text-gray-400">
-                    Client: <strong className="text-gray-700">{selectedInquiry.fullName}</strong> ({selectedInquiry.phone})
-                  </p>
-                </div>
-                <button
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {noteModalOpen && selectedInquiry && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setNoteModalOpen(false)}
-                  className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition-colors"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-
-              {/* Existing Notes history */}
-              {selectedInquiry.notes && selectedInquiry.notes.length > 0 && (
-                <div className="max-h-36 overflow-y-auto space-y-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-xs">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
-                    Call History Logs:
-                  </span>
-                  {selectedInquiry.notes.map((n, idx) => (
-                    <div key={idx} className="pb-1.5 border-b border-gray-200/50 last:border-b-0">
-                      <div className="flex items-center justify-between text-[10px] text-gray-400">
-                        <span className="font-bold text-[#0756A5]">{n.author || "Telecaller"}</span>
-                        <span>{new Date(n.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <p className="text-gray-700 mt-0.5">{n.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Note input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-700 block">
-                  Call Discussion / Follow-Up Details:
-                </label>
-                <textarea
-                  rows={4}
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="e.g. Spoke with client. Client requires Next.js web application for real estate. Budget ₹2.5 Lakh. Scheduled demo call for Thursday 4 PM."
-                  className="w-full p-3 text-xs border border-gray-200 rounded-2xl outline-none focus:border-[#0756A5] focus:ring-2 focus:ring-blue-100"
+                  className="fixed inset-0 bg-gray-900/40"
                 />
-              </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] z-10 space-y-4 overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0">
+                    <div>
+                      <h4 className="text-base font-bold text-[#082B59]">Add Telecaller Log</h4>
+                      <p className="text-xs text-gray-400">
+                        Client: <strong className="text-gray-700">{selectedInquiry.fullName}</strong> ({selectedInquiry.phone})
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setNoteModalOpen(false)}
+                      className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition-colors"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
 
-              <div className="flex gap-2.5 justify-end pt-2">
-                <button
-                  onClick={() => setNoteModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveNote}
-                  disabled={savingNote || !noteText.trim()}
-                  className="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white hover:from-[#064a8f] hover:to-[#072449] disabled:opacity-50 transition-all shadow-sm"
-                >
-                  {savingNote ? "Saving..." : "Save Call Log"}
-                </button>
+                  {/* Existing Notes history */}
+                  {selectedInquiry.notes && selectedInquiry.notes.length > 0 && (
+                    <div className="max-h-36 overflow-y-auto space-y-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-xs shrink-0">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        Call History Logs:
+                      </span>
+                      {selectedInquiry.notes.map((n, idx) => (
+                        <div key={idx} className="pb-1.5 border-b border-gray-200/50 last:border-b-0">
+                          <div className="flex items-center justify-between text-[10px] text-gray-400">
+                            <span className="font-bold text-[#0756A5]">{n.author || "Telecaller"}</span>
+                            <span>{new Date(n.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-gray-700 mt-0.5">{n.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Note input */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700 block">
+                      Call Discussion / Follow-Up Details:
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="e.g. Spoke with client. Client requires Next.js web application for real estate. Budget ₹2.5 Lakh. Scheduled demo call for Thursday 4 PM."
+                      className="w-full p-3 text-xs border border-gray-200 rounded-2xl outline-none focus:border-[#0756A5] focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={sendNoteWhatsApp}
+                      onChange={(e) => setSendNoteWhatsApp(e.target.checked)}
+                      className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold text-emerald-900 block">
+                        Send this log message on WhatsApp
+                      </span>
+                      <span className="text-[11px] text-emerald-700">
+                        Automatically notifies {selectedInquiry.fullName} ({selectedInquiry.phone}) via WhatsApp
+                      </span>
+                    </div>
+                  </label>
+
+                  <div className="flex gap-2.5 justify-end pt-2 shrink-0">
+                    <button
+                      onClick={() => setNoteModalOpen(false)}
+                      className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveNote}
+                      disabled={savingNote || !noteText.trim()}
+                      className="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#0756A5] to-[#082B59] text-white hover:from-[#064a8f] hover:to-[#072449] disabled:opacity-50 transition-all shadow-sm"
+                    >
+                      {savingNote ? "Saving..." : "Save Call Log"}
+                    </button>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
       {/* ── 6. CONFIRM DEAL & SUBMIT FOR APPROVAL MODAL ── */}
-      <AnimatePresence>
-        {dealModalOpen && dealInquiry && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setDealModalOpen(false)}
-              className="fixed inset-0 bg-gray-900/50 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl z-10 space-y-4 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <Handshake size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-extrabold text-[#082B59]">
-                      Confirm Deal & Request Approval
-                    </h4>
-                    <p className="text-xs text-gray-400">
-                      Client: <strong className="text-gray-700">{dealInquiry.fullName}</strong> ({dealInquiry.phone})
-                    </p>
-                  </div>
-                </div>
-                <button
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {dealModalOpen && dealInquiry && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setDealModalOpen(false)}
-                  className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
+                  className="fixed inset-0 bg-gray-900/40"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  className="relative bg-white border border-gray-200 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col p-6 shadow-[0_20px_60px_-15px_rgba(8,43,89,0.28)] z-10 space-y-4 overflow-y-auto"
                 >
-                  <X size={15} />
-                </button>
-              </div>
-
-              <form onSubmit={handleConfirmDealSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Total Deal Value (₹) *
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 150000"
-                      value={dealValue}
-                      onChange={(e) => setDealValue(e.target.value)}
-                      className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Advance Collected (₹)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 50000"
-                      value={dealAdvance}
-                      onChange={(e) => setDealAdvance(e.target.value)}
-                      className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Project Category
-                    </label>
-                    <select
-                      value={dealCategory}
-                      onChange={(e) => setDealCategory(e.target.value)}
-                      className="w-full p-2.5 text-xs border border-gray-200 rounded-xl bg-white focus:outline-none focus:border-[#0756A5]"
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <Handshake size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-extrabold text-[#082B59]">
+                          Confirm Deal & Request Approval
+                        </h4>
+                        <p className="text-xs text-gray-400">
+                          Client: <strong className="text-gray-700">{dealInquiry.fullName}</strong> ({dealInquiry.phone})
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setDealModalOpen(false)}
+                      className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
                     >
-                      <option value="Web Development">Web Development</option>
-                      <option value="Mobile App Development">Mobile App Development</option>
-                      <option value="E-Commerce Solution">E-Commerce Solution</option>
-                      <option value="Custom CRM / ERP">Custom CRM / ERP</option>
-                      <option value="AI / Chatbot Integration">AI / Chatbot Integration</option>
-                      <option value="UI/UX & Branding">UI/UX & Branding</option>
-                    </select>
+                      <X size={15} />
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Estimated Days to Deliver
+                  <form onSubmit={handleConfirmDealSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          Total Deal Value (₹) *
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 150000"
+                          value={dealValue}
+                          onChange={(e) => setDealValue(e.target.value)}
+                          className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          Advance Collected (₹)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 50000"
+                          value={dealAdvance}
+                          onChange={(e) => setDealAdvance(e.target.value)}
+                          className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          Project Category
+                        </label>
+                        <select
+                          value={dealCategory}
+                          onChange={(e) => setDealCategory(e.target.value)}
+                          className="w-full p-2.5 text-xs border border-gray-200 rounded-xl bg-white focus:outline-none focus:border-[#0756A5]"
+                        >
+                          <option value="Web Development">Web Development</option>
+                          <option value="Mobile App Development">Mobile App Development</option>
+                          <option value="E-Commerce Solution">E-Commerce Solution</option>
+                          <option value="Custom CRM / ERP">Custom CRM / ERP</option>
+                          <option value="AI / Chatbot Integration">AI / Chatbot Integration</option>
+                          <option value="UI/UX & Branding">UI/UX & Branding</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          Estimated Days to Deliver
+                        </label>
+                        <input
+                          type="number"
+                          value={dealDays}
+                          onChange={(e) => setDealDays(e.target.value)}
+                          className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
+                          min="5"
+                          max="365"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">
+                        Company / Business Name (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Acme Technologies Pvt Ltd"
+                        value={dealCompanyName}
+                        onChange={(e) => setDealCompanyName(e.target.value)}
+                        className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">
+                        Project Requirements / Scope Overview *
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={dealScope}
+                        onChange={(e) => setDealScope(e.target.value)}
+                        placeholder="Detail agreed deliverables, features, tech stack..."
+                        className="w-full p-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
+                        required
+                      />
+                    </div>
+
+                    <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={sendDealWhatsApp}
+                        onChange={(e) => setSendDealWhatsApp(e.target.checked)}
+                        className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                      />
+                      <div className="text-xs">
+                        <span className="font-bold text-emerald-900 block">
+                          Send deal confirmation on WhatsApp
+                        </span>
+                        <span className="text-[11px] text-emerald-700">
+                          Automatically notifies {dealInquiry.fullName} ({dealInquiry.phone}) via WhatsApp
+                        </span>
+                      </div>
                     </label>
-                    <input
-                      type="number"
-                      value={dealDays}
-                      onChange={(e) => setDealDays(e.target.value)}
-                      className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
-                      min="5"
-                      max="365"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">
-                    Company / Business Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Acme Technologies Pvt Ltd"
-                    value={dealCompanyName}
-                    onChange={(e) => setDealCompanyName(e.target.value)}
-                    className="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">
-                    Project Requirements / Scope Overview *
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={dealScope}
-                    onChange={(e) => setDealScope(e.target.value)}
-                    placeholder="Detail agreed deliverables, features, tech stack..."
-                    className="w-full p-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-[#0756A5]"
-                    required
-                  />
-                </div>
-
-                <div className="flex gap-2.5 justify-end pt-3 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => setDealModalOpen(false)}
-                    className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingDeal || !dealValue}
-                    className="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5"
-                  >
-                    <CheckCircle2 size={14} />
-                    <span>{submittingDeal ? "Submitting..." : "Submit for Admin Approval"}</span>
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+                    <div className="flex gap-2.5 justify-end pt-3 border-t border-gray-100 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setDealModalOpen(false)}
+                        className="px-4 py-2 text-xs font-semibold border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={submittingDeal || !dealValue}
+                        className="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5"
+                      >
+                        <CheckCircle2 size={14} />
+                        <span>{submittingDeal ? "Submitting..." : "Submit for Admin Approval"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </motion.div>
   );
 };

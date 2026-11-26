@@ -1,4 +1,8 @@
 import QuoteRequest from "../models/quoteRequest.model.js";
+import {
+  sendCallLogWhatsAppNotification,
+  sendQuoteWhatsAppNotification,
+} from "../utils/whatsapp.js";
 
 // SUBMIT QUOTE REQUEST (Public Price Calculator / Consultation Request)
 export const createQuoteRequest = async (req, res) => {
@@ -38,6 +42,22 @@ export const createQuoteRequest = async (req, res) => {
       estimatedPriceRange: estimatedPriceRange || "Custom Consultation",
       status: "New",
     });
+
+    // Send WhatsApp notification asynchronously
+    sendQuoteWhatsAppNotification({
+      fullName,
+      phone,
+      email,
+      state: state || "All",
+      companyName: companyName || "",
+      serviceName,
+      serviceCategory,
+      projectBudget,
+      timeline,
+      projectDescription,
+    }).catch((err) =>
+      console.error("[WhatsApp] Error sending quote notification:", err.message)
+    );
 
     res.status(201).json({
       success: true,
@@ -92,7 +112,8 @@ export const getAllQuoteRequests = async (req, res) => {
 export const updateQuoteStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, noteText, author } = req.body;
+    const { status, noteText, author, sendWhatsApp = true } = req.body;
+    const trimmedNote = typeof noteText === "string" ? noteText.trim() : "";
 
     const roleName = (
       req.user?.role?.name ||
@@ -113,7 +134,7 @@ export const updateQuoteStatus = async (req, res) => {
           message: "Forbidden: You do not have permission to update project inquiry status.",
         });
       }
-      if (noteText && !canAddNote) {
+      if (trimmedNote && !canAddNote) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: You do not have permission to add notes.",
@@ -125,10 +146,10 @@ export const updateQuoteStatus = async (req, res) => {
     if (status) updateData.status = status;
 
     let updateQuery = { $set: updateData };
-    if (noteText) {
+    if (trimmedNote) {
       updateQuery.$push = {
         notes: {
-          text: noteText,
+          text: trimmedNote,
           author: author || "Admin",
           createdAt: new Date(),
         },
@@ -140,7 +161,23 @@ export const updateQuoteStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Quote request not found" });
     }
 
-    res.status(200).json({ success: true, message: "Quote updated", quote });
+    let whatsappResult = null;
+    if (trimmedNote && sendWhatsApp !== false) {
+      whatsappResult = await sendCallLogWhatsAppNotification({
+        fullName: quote.fullName,
+        phone: quote.phone,
+        serviceName: quote.serviceName || quote.serviceCategory || "Custom Solution",
+        noteText: trimmedNote,
+        status: quote.status,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Quote updated",
+      quote,
+      whatsappSent: Boolean(whatsappResult?.success),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

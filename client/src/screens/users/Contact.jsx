@@ -117,7 +117,7 @@ const Contact = () => {
     try {
       await axios.post(`${API_BASE_URL}/inquiries/submit`, formData);
       setSubmitted(true);
-      toast.success("Inquiry submitted successfully! A senior consultant will reach out.");
+      toast.success("Inquiry submitted! A confirmation has been sent to your WhatsApp.");
       setFormData({
         fullName: "",
         email: "",
@@ -423,7 +423,7 @@ const Contact = () => {
                     Inquiry Received Successfully!
                   </h4>
                   <p className="text-xs text-emerald-700 max-w-md mx-auto leading-relaxed">
-                    Thank you for reaching out to Vishwakarma Web Private Limited. A senior technical consultant will contact you via email or phone within 24 hours.
+                    Thank you for reaching out to Vishwakarma Web Private Limited. A confirmation message has been sent to your WhatsApp number, and a senior consultant will contact you within 24 hours.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}

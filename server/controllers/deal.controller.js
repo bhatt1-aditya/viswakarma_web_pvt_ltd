@@ -7,8 +7,14 @@ import Conversation from "../models/conversation.model.js";
 import Payment from "../models/payment.model.js";
 import AuditLog from "../models/auditLog.model.js";
 import Notification from "../models/notification.model.js";
+import Inquiry from "../models/inquiry.model.js";
+import QuoteRequest from "../models/quoteRequest.model.js";
 import { generateClientId, generateProjectId, generateInvoiceNumber } from "../utils/idGenerator.js";
 import { emitToProject, emitToUser } from "../socket/socketHandler.js";
+import {
+  sendDealApprovedWhatsAppNotification,
+  sendDealWhatsAppNotification,
+} from "../utils/whatsapp.js";
 
 // TELECALLER SUBMIT DEAL FOR APPROVAL
 export const submitDeal = async (req, res) => {
@@ -25,6 +31,7 @@ export const submitDeal = async (req, res) => {
       estimatedDays = 30,
       state,
       companyName,
+      sendWhatsApp = true,
     } = req.body;
 
     let lead = null;
@@ -79,6 +86,25 @@ export const submitDeal = async (req, res) => {
 
     await lead.save();
 
+    // Mark originating Inquiry or QuoteRequest as Closed so the deal cannot be re-submitted
+    if (leadId) {
+      const dealNote = {
+        text: `Deal confirmed by ${req.user.name}. Submitted for Admin approval. Value: ₹${dealValue}, Advance: ₹${advanceAmount}`,
+        author: req.user.name || "Telecaller",
+        createdAt: new Date(),
+      };
+      await Promise.all([
+        Inquiry.findByIdAndUpdate(leadId, {
+          $set: { status: "Closed" },
+          $push: { notes: dealNote },
+        }).catch(() => null),
+        QuoteRequest.findByIdAndUpdate(leadId, {
+          $set: { status: "Closed" },
+          $push: { notes: dealNote },
+        }).catch(() => null),
+      ]);
+    }
+
     // Notify all admins via in-app notification
     const adminRoles = await Role.find({ name: { $in: ["admin", "super admin", "superadmin"] } });
     const adminRoleIds = adminRoles.map((r) => r._id);
@@ -95,9 +121,23 @@ export const submitDeal = async (req, res) => {
       emitToUser(admin._id.toString(), "new_notification", notif);
     }
 
+    let whatsappResult = null;
+    if (sendWhatsApp !== false) {
+      whatsappResult = await sendDealWhatsAppNotification({
+        fullName: lead.name,
+        phone: lead.phone,
+        category,
+        dealValue,
+        advanceAmount,
+        estimatedDays,
+        projectScope: lead.dealDetails.projectScope,
+      });
+    }
+
     res.status(200).json({
       message: "Deal submitted successfully for Admin approval",
       data: lead,
+      whatsappSent: Boolean(whatsappResult?.success),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -361,8 +401,19 @@ export const approveDeal = async (req, res) => {
       emitToUser(submitterId.toString(), "new_notification", telecallerNotif);
     }
 
+    const whatsappResult = await sendDealApprovedWhatsAppNotification({
+      fullName: clientUser.name,
+      phone: clientUser.phone,
+      email: clientUser.email,
+      clientId: clientUser.clientId,
+      tempPassword,
+      projectId: project.projectId,
+      projectName: project.name,
+    });
+
     res.status(200).json({
       message: "Deal approved successfully! Client account and Project workspace initialized.",
+      whatsappSent: Boolean(whatsappResult?.success),
       data: {
         client: {
           id: clientUser._id,
