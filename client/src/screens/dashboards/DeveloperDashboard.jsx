@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CheckSquare,
-  Clock,
-  FolderGit2,
   Send,
   ArrowRight,
   X,
