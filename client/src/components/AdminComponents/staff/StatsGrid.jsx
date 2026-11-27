@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, ShieldCheck, UserCheck, Key, Lock } from "lucide-react";
-import API_BASE_URL from "../../../utils/apiConfig";
+import API_BASE_URL, { getAuthHeaders } from "../../../utils/apiConfig";
 
-const StatsGrid = () => {
+const StatsGrid = ({ refreshKey = 0 }) => {
   const [stats, setStats] = useState({
     totalStaff: 0,
     admins: 0,
@@ -17,16 +17,23 @@ const StatsGrid = () => {
     const fetchStaffStats = async () => {
       try {
         setLoading(true);
-        // Fetch users to compute real metrics
+        const headers = getAuthHeaders();
+        // Fetch users and roles to compute real metrics
         const [usersRes, rolesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/users/get-all-user?limit=100`, { credentials: "include" }),
-          fetch(`${API_BASE_URL}/role/get-all-role`, { credentials: "include" }),
+          fetch(`${API_BASE_URL}/users/get-all-user?limit=100`, {
+            credentials: "include",
+            headers,
+          }),
+          fetch(`${API_BASE_URL}/role/get-all-role`, {
+            credentials: "include",
+            headers,
+          }),
         ]);
 
-        const usersData = await usersRes.json();
-        const rolesData = await rolesRes.json();
+        const usersData = usersRes.ok ? await usersRes.json() : {};
+        const rolesData = rolesRes.ok ? await rolesRes.json() : {};
 
-        const usersList = usersData?.data || [];
+        const usersList = Array.isArray(usersData?.data) ? usersData.data : [];
         const rolesList = Array.isArray(rolesData?.data)
           ? rolesData.data
           : Array.isArray(rolesData)
@@ -44,7 +51,7 @@ const StatsGrid = () => {
           totalStaff: usersData?.totalUsers || usersList.length,
           admins: adminCount,
           members: memberCount,
-          roles: rolesList.length || 3,
+          roles: rolesList.length || 0,
           rbacActive: 100,
         });
       } catch (err) {
@@ -55,7 +62,7 @@ const StatsGrid = () => {
     };
 
     fetchStaffStats();
-  }, []);
+  }, [refreshKey]);
 
   const items = [
     {

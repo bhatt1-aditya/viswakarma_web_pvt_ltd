@@ -16,7 +16,7 @@ import {
   FolderGit2,
   Tag,
 } from "lucide-react";
-import API_BASE_URL from "../../../utils/apiConfig";
+import API_BASE_URL, { getAuthHeaders } from "../../../utils/apiConfig";
 import { INDIAN_STATES } from "../../../utils/indianStates";
 
 const CORE_MODULE_DEFINITIONS = [
@@ -337,8 +337,13 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
   const submit = async () => {
     setErr("");
 
-    if (!form.name || !form.phone) {
-      setErr("Name and phone are required.");
+    if (!form.name || !form.email || !form.phone) {
+      setErr("Name, email, and phone are required.");
+      return;
+    }
+
+    if (!form.role) {
+      setErr("Please select a security role.");
       return;
     }
 
@@ -353,7 +358,6 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
       const url =
         mode === "edit"
           ? `${API_BASE_URL}/users/update-user/${initial._id}`
@@ -363,16 +367,13 @@ const StaffForm = ({ initial, roles, mode, onSave, onCancel }) => {
 
       const res = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body),
         credentials: "include",
       });
 
+      const d = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const d = await res.json();
         throw new Error(d.message || "Request failed");
       }
 

@@ -5,4 +5,12 @@ export const API_BASE_URL =
     ? "http://localhost:5000/api"
     : "/api");
 
+export const getAuthHeaders = (extraHeaders = {}) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return {
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export default API_BASE_URL;

@@ -28,11 +28,11 @@ import TableSkeleton from "../../components/AdminComponents/staff/TableSkeleton"
 import StaffTable from "../../components/AdminComponents/staff/StaffTable";
 import Pagination from "../../components/common/Pagination";
 import { useAuth } from "../../context/AuthContext";
-import API_BASE_URL from "../../utils/apiConfig";
+import API_BASE_URL, { getAuthHeaders } from "../../utils/apiConfig";
 
 function initials(name = "") {
   return (
-    name
+    (name || "")
       .split(" ")
       .slice(0, 2)
       .map((w) => w[0] || "")
@@ -127,6 +127,7 @@ const Staff = () => {
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [newRoleName, setNewRoleName] = useState("");
   const [editingRole, setEditingRole] = useState(null);
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
   const showToast = useCallback((message, type = "ok") => {
     setToast({ message, type });
@@ -144,13 +145,19 @@ const Staff = () => {
 
       const res = await fetch(`${API_BASE_URL}/users/get-all-user?${queryParams}`, {
         credentials: "include",
+        headers: getAuthHeaders(),
       });
 
-      const data = await res.json();
-      setUsers(data.data || []);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to load staff list");
+      }
+
+      setUsers(Array.isArray(data.data) ? data.data : []);
       setTotalPages(data.totalPages || 1);
     } catch (err) {
-      showToast("Could not load staff list. Check server connection.", "err");
+      setUsers([]);
+      showToast(err.message || "Could not load staff list. Check server connection.", "err");
     }
     setLoading(false);
   }, [page, limit, search, roleFilter, showToast]);
@@ -159,8 +166,12 @@ const Staff = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/role/get-all-role`, {
         credentials: "include",
+        headers: getAuthHeaders(),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to load roles");
+      }
       setRoles(Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : []);
     } catch {
       setRoles([]);
@@ -178,22 +189,19 @@ const Staff = () => {
       return;
     }
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/users/delete-user/${targetUser._id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         credentials: "include",
       });
+      const d = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const d = await res.json();
         throw new Error(d.message || "Delete failed");
       }
       showToast("Staff member removed successfully.");
       setConfirm(null);
       loadUsers();
+      setStatsRefreshKey((k) => k + 1);
     } catch (e) {
       showToast(e.message, "err");
     }
@@ -204,15 +212,16 @@ const Staff = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/role/create-role`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ name: newRoleName }),
         credentials: "include",
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Failed to create role");
       showToast("Security role created");
       setNewRoleName("");
       loadRoles();
+      setStatsRefreshKey((k) => k + 1);
     } catch (err) {
       showToast(err.message, "err");
     }
@@ -223,15 +232,16 @@ const Staff = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/role/update-role-by-id/${editingRole._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ name: editingRole.name }),
         credentials: "include",
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Failed to update role");
       showToast("Role updated");
       setEditingRole(null);
       loadRoles();
+      loadUsers();
     } catch (err) {
       showToast(err.message, "err");
     }
@@ -242,12 +252,14 @@ const Staff = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/role/delete-role/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
         credentials: "include",
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Failed to delete role");
       showToast("Role deleted");
       loadRoles();
+      setStatsRefreshKey((k) => k + 1);
     } catch (err) {
       showToast(err.message, "err");
     }
@@ -298,7 +310,7 @@ const Staff = () => {
       </div>
 
       {/* ── METRIC STATS GRID ── */}
-      <StatsGrid />
+      <StatsGrid refreshKey={statsRefreshKey} />
 
       {/* ── SEARCH & FILTER CONTROLS ── */}
       <div className="bg-white rounded-2xl p-4 border border-gray-200/70 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -544,6 +556,7 @@ const Staff = () => {
                   : "Staff record updated successfully."
               );
               loadUsers();
+              setStatsRefreshKey((k) => k + 1);
             }}
             onCancel={() => setModal(null)}
           />
