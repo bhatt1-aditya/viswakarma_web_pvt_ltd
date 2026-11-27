@@ -22,9 +22,7 @@ import {
   Handshake,
   Code,
   ShieldAlert,
-  DollarSign,
   CheckSquare,
-  Video,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
