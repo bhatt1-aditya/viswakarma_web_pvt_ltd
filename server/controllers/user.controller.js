@@ -24,6 +24,9 @@ export const createUser = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to add staff" });
     }
 
+    if (!role) {
+      return res.status(400).json({ message: "Role is required" });
+    }
     const roleExists = await Role.findById(role);
     if (!roleExists) return res.status(400).json({ message: "Invalid role" });
 
@@ -106,7 +109,7 @@ export const loginUser = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
 
